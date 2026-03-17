@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import API from '../apiConfig';
 
 const Profile = () => {
-  const { user, uploadPhoto, logout } = useAuth();
+  const { user, uploadPhoto } = useAuth();
   const [activeTab, setActiveTab] = useState('settings');
   const [uploading, setUploading] = useState(false);
   const [passwords, setPasswords] = useState({ old: '', new: '', confirm: '' });
