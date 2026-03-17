@@ -13,12 +13,22 @@ import billRoutes from '../backend/src/routes/bills';
 import { protect } from '../backend/src/middleware/auth';
 import { seedData } from '../backend/src/seed';
 
-// Ensure models are registered with sequelize
-import '../backend/src/models/Student';
-import '../backend/src/models/Room';
-import '../backend/src/models/Complaint';
-import '../backend/src/models/Bill';
+// Import Models
+import Student from '../backend/src/models/Student';
+import Room from '../backend/src/models/Room';
+import Complaint from '../backend/src/models/Complaint';
+import Bill from '../backend/src/models/Bill';
 import NotificationModel from '../backend/src/models/Notification'; 
+
+// Establish Associations (Crucial for includes)
+Room.hasMany(Student, { foreignKey: 'roomId', as: 'occupants' });
+Student.belongsTo(Room, { foreignKey: 'roomId', as: 'room' });
+Student.hasMany(Complaint, { foreignKey: 'studentId' });
+Complaint.belongsTo(Student, { foreignKey: 'studentId' });
+Student.hasMany(Bill, { foreignKey: 'studentId' });
+Bill.belongsTo(Student, { foreignKey: 'studentId' });
+Student.hasMany(NotificationModel, { foreignKey: 'studentId' });
+NotificationModel.belongsTo(Student, { foreignKey: 'studentId' });
 
 // Load environment variables
 dotenv.config();
@@ -39,13 +49,13 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 app.use(compression());
 app.use(cors({ 
-  origin: true, // Allow all origins in this setup, or restrict to process.env.FRONTEND_URL
+  origin: true, 
   credentials: true 
 }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000, 
   max: 100,
   message: { message: 'Too many requests from this IP, please try again later.' },
   standardHeaders: true,
@@ -100,6 +110,25 @@ app.use(async (_req: Request, _res: Response, next: NextFunction) => {
   }
 });
 
+// Health check route (before protection)
+app.get('/api/health', async (_req: Request, res: Response) => {
+  try {
+    await sequelize.authenticate();
+    res.json({ 
+      status: 'OK', 
+      message: 'Hostel Management API is running',
+      timestamp: new Date().toISOString(),
+      db: 'Connected'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Database connection failed',
+      db: 'Disconnected'
+    });
+  }
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
@@ -120,28 +149,32 @@ app.post('/api/students/book-request', protect as any, async (
       return res.status(400).json({ message: 'Valid roomId is required' });
     }
 
-    const StudentModel = sequelize.models.Student;
-    const student = await StudentModel?.findByPk(req.user!.id, { 
+    const student = await Student.findByPk(req.user!.id, { 
       transaction: t,
-      include: [{ model: sequelize.models.Room, as: 'Room' }] // Adjust alias as per associations
+      include: [{ model: Room, as: 'room' }]
     });
     
     if (!student) {
+      await t.rollback();
       return res.status(404).json({ message: 'Student not found' });
     }
 
     // Check room availability
-    const RoomModel = sequelize.models.Room;
-    const room = await RoomModel.findByPk(roomId, { 
-      include: [{ model: StudentModel, as: 'occupants' }],
+    const room = await Room.findByPk(roomId, { 
+      include: [{ model: Student, as: 'occupants' }],
       transaction: t 
     });
     
     if (!room) {
+      await t.rollback();
       return res.status(404).json({ message: 'Room not found' });
     }
     
-    if (room.get('occupants')?.length >= (room.get('capacity') as number)) {
+    const occupants = (room as any).occupants || [];
+    const capacity = room.get('capacity') as number;
+
+    if (occupants.length >= capacity) {
+      await t.rollback();
       return res.status(400).json({ message: 'Room is fully occupied' });
     }
 
@@ -152,14 +185,14 @@ app.post('/api/students/book-request', protect as any, async (
 
     await t.commit();
     
-    const updatedStudent = await StudentModel?.findByPk(
+    const updatedStudent = await Student.findByPk(
       req.user!.id, 
-      { include: [{ model: sequelize.models.Room, as: 'Room' }] }
+      { include: [{ model: Room, as: 'room' }] }
     );
     
     res.json(updatedStudent);
   } catch (error: any) {
-    await t.rollback();
+    if (!(t as any).finished) await t.rollback();
     console.error('Booking error:', error);
     res.status(500).json({ message: error.message });
   }
@@ -175,10 +208,9 @@ app.get('/api/students', protect as any, async (
       return res.status(403).json({ message: 'Admin access required' });
     }
     
-    const StudentModel = sequelize.models.Student;
-    const students = await StudentModel.findAll({ 
+    const students = await Student.findAll({ 
       where: { role: 'student' },
-      include: [{ model: sequelize.models.Room, as: 'Room' }]
+      include: [{ model: Room, as: 'room' }]
     });
     
     res.json(students);
@@ -195,6 +227,7 @@ app.patch('/api/students/:id/booking', protect as any, async (
   const t = await sequelize.transaction();
   try {
     if (req.user?.role !== 'admin') {
+      await t.rollback();
       return res.status(403).json({ message: 'Admin access required' });
     }
     
@@ -202,13 +235,13 @@ app.patch('/api/students/:id/booking', protect as any, async (
     const studentId = Number(req.params.id);
     
     if (!['Pending', 'Approved', 'Rejected'].includes(status)) {
+      await t.rollback();
       return res.status(400).json({ message: 'Invalid status' });
     }
 
-    const StudentModel = sequelize.models.Student;
-    
-    const student = await StudentModel.findByPk(studentId, { transaction: t });
+    const student = await Student.findByPk(studentId, { transaction: t });
     if (!student) {
+      await t.rollback();
       return res.status(404).json({ message: 'Student not found' });
     }
     
@@ -219,13 +252,13 @@ app.patch('/api/students/:id/booking', protect as any, async (
       studentId: student.id,
       title: 'Booking Update',
       message: `Your room booking status has been updated to: ${status}`,
-      type: status === 'Approved' ? 'success' : status === 'Rejected' ? 'error' : 'warning'
+      type: status === 'Approved' ? 'success' : 'warning' // 'error' is not in ENUM, using 'warning' for rejected
     }, { transaction: t });
 
     await t.commit();
     res.json(student);
   } catch (error: any) {
-    await t.rollback();
+    if (!(t as any).finished) await t.rollback();
     res.status(500).json({ message: error.message });
   }
 });
@@ -253,25 +286,6 @@ app.post('/api/students/:id/notify', protect as any, async (
     res.status(201).json(notif);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
-  }
-});
-
-// Enhanced Health Check
-app.get('/api/health', async (_req: Request, res: Response) => {
-  try {
-    await sequelize.authenticate();
-    res.json({ 
-      status: 'OK', 
-      message: 'Hostel Management API is running',
-      timestamp: new Date().toISOString(),
-      db: 'Connected'
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      status: 'ERROR', 
-      message: 'Database connection failed',
-      db: 'Disconnected'
-    });
   }
 });
 
