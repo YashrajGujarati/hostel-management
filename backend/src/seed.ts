@@ -6,16 +6,28 @@ import Bill from './models/Bill';
 import Complaint from './models/Complaint';
 import Notification from './models/Notification';
 
-const seedData = async () => {
+export const seedData = async (isStartup = false) => {
   try {
-    await sequelize.authenticate();
-    console.log('✅ Connected to MySQL');
+    // Only verify connection if not already connected (though Sequelize handle this)
+    // await sequelize.authenticate(); 
 
-    // Sync and drop existing tables
-    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-    await sequelize.sync({ force: true });
-    await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-    console.log('🗑️  Database reset and synchronized');
+    // Sync and drop existing tables - ONLY if explicitly called, not on auto-seed
+    // On auto-seed we assume tables exist but are empty
+    if (!isStartup) {
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+      await sequelize.sync({ force: true });
+      await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+      console.log('🗑️  Database reset and synchronized');
+    } else {
+      console.log('🌱 Checking if database needs seeding...');
+    }
+
+    // Check if admin already exists
+    const adminExists = await Student.findOne({ where: { role: 'admin' } });
+    if (adminExists && isStartup) {
+      console.log('✅ Database already has data. Skipping seed.');
+      return;
+    }
 
     // Create admin
     await Student.create({
@@ -76,11 +88,7 @@ const seedData = async () => {
     console.log('Student Login: rahul@student.com / student123');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-    process.exit(0);
   } catch (err) {
     console.error('❌ Seed error:', err);
-    process.exit(1);
   }
 };
-
-seedData();

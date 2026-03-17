@@ -13,6 +13,7 @@ import Bill from './models/Bill';
 import Notification from './models/Notification';
 import { protect } from './middleware/auth';
 import sequelize from './config/db';
+import { seedData } from './seed';
 
 // Establish Associations
 Room.hasMany(Student, { foreignKey: 'roomId', as: 'occupants' });
@@ -40,8 +41,9 @@ app.use((req, res, next) => {
 
 // Connect to MySQL and Sync
 connectDB().then(() => {
-  sequelize.sync({ alter: true }).then(() => {
+  sequelize.sync({ alter: true }).then(async () => {
     console.log('✅ Database synchronized');
+    await seedData(true);
   });
 });
 
