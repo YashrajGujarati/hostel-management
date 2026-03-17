@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import Counter from '../components/Counter';
 import HostelMap from '../components/HostelMap';
+import { generateReceiptPDF } from '../utils/receiptGenerator';
 
 import API from '../apiConfig';
 
@@ -130,10 +131,48 @@ const StudentDashboard = () => {
         </div>
       </motion.div>
 
+      {/* Recent Activity (Bills) */}
+      {bills.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} style={{ marginTop: '2.5rem' }}>
+          <h3 style={{ marginBottom: '1.2rem', fontSize: '1.2rem', fontWeight: 800 }}>Recent Payments</h3>
+          <div style={{ display: 'grid', gap: '1rem' }}>
+            {bills.slice(0, 3).map(b => (
+              <div key={b._id} className="glass-card" style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-glass)' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{b.durationLabel}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    ₹{b.totalAmount.toLocaleString()} • {new Date(b.generatedAt).toLocaleDateString()}
+                  </div>
+                </div>
+                {b.paymentStatus === 'Paid' && (
+                  <button 
+                    className="btn btn-outline btn-sm"
+                    style={{ fontSize: '0.7rem' }}
+                    onClick={() => {
+                      generateReceiptPDF({
+                        id: b._id.toString().slice(-8).toUpperCase(),
+                        studentName: user.name,
+                        roomNumber: room?.roomNumber || 'N/A',
+                        amount: b.totalAmount,
+                        date: b.generatedAt,
+                        duration: b.durationLabel,
+                        paymentMethod: b.paymentMethod || 'Online'
+                      });
+                    }}
+                  >
+                    📥 Download Receipt
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Recent Complaints */}
       {complaints.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} style={{ marginTop: '2rem' }}>
-          <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem', fontWeight: 700 }}>Recent Complaints</h3>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} style={{ marginTop: '2.5rem' }}>
+          <h3 style={{ marginBottom: '1.2rem', fontSize: '1.2rem', fontWeight: 800 }}>Feedback Status</h3>
           <div className="complaints-list">
             {complaints.slice(0, 3).map(c => (
               <div key={c._id} className="complaint-card">

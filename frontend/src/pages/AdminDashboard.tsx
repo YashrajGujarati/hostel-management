@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import API from '../apiConfig';
 
@@ -144,42 +145,44 @@ const AdminDashboard = () => {
         </div>
       </motion.div>
 
-      {/* REVENUE ANALYTICS */}
+      {/* ANALYTICS SECTION */}
       <motion.div 
-        className="stat-card" 
-        style={{ marginTop: '20px', padding: '2rem' }}
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.25 }}
+        className="glass-card" 
+        style={{ marginTop: '24px', padding: '2.5rem' }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
       >
-        <h3 style={{ color: 'white', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          📈 Monthly Revenue Analytics
-        </h3>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', height: '200px', padding: '1rem 0', borderLeft: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)' }}>
-          {[
-            { m: 'Jan', v: 45000 }, { m: 'Feb', v: 52000 }, { m: 'Mar', v: 48000 }, 
-            { m: 'Apr', v: 61000 }, { m: 'May', v: 55000 }, { m: 'Jun', v: 72000 }
-          ].map((d, i) => (
-            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-              <motion.div 
-                initial={{ height: 0 }}
-                animate={{ height: `${(d.v / 80000) * 100}%` }}
-                transition={{ duration: 1, delay: i * 0.1 }}
-                style={{ 
-                  width: '100%', 
-                  maxWidth: '40px', 
-                  background: 'linear-gradient(to top, var(--accent-cyan), var(--accent-blue))',
-                  borderRadius: '6px 6px 0 0',
-                  position: 'relative'
-                }}
-              >
-                <div style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7rem', color: 'var(--accent-cyan)', fontWeight: 700 }}>
-                  ₹{(d.v/1000)}k
-                </div>
-              </motion.div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{d.m}</span>
-            </div>
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+           <h3 style={{ color: 'white', fontWeight: 800, fontSize: '1.3rem' }}>📈 Performance Insights</h3>
+           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Real-time Data Sync</div>
+        </div>
+        
+        <div style={{ width: '100%', height: '300px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={[
+              { name: 'Jan', revenue: 45000, bookings: 40 },
+              { name: 'Feb', revenue: 52000, bookings: 45 },
+              { name: 'Mar', revenue: 48000, bookings: 42 },
+              { name: 'Apr', revenue: 61000, bookings: 55 },
+              { name: 'May', revenue: 55000, bookings: 50 },
+              { name: 'Jun', revenue: 72000, bookings: 65 }
+            ]}>
+              <defs>
+                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="var(--accent-blue)" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+              <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value: number) => `₹${value/1000}k`} />
+              <Tooltip 
+                contentStyle={{ background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)', borderRadius: '12px' }}
+                itemStyle={{ color: 'var(--accent-blue)', fontWeight: 700 }}
+              />
+              <Area type="monotone" dataKey="revenue" stroke="var(--accent-blue)" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </motion.div>
 
