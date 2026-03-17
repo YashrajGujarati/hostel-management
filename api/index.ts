@@ -1,19 +1,19 @@
 import express from 'express';
 import cors from 'cors';
-import { connectDB } from './config/db';
-import authRoutes from './routes/auth';
-import roomRoutes from './routes/rooms';
-import complaintRoutes from './routes/complaints';
-import foodMenuRoutes from './routes/foodMenu';
-import billRoutes from './routes/bills';
-import Student from './models/Student';
-import Room from './models/Room';
-import Complaint from './models/Complaint';
-import Bill from './models/Bill';
-import Notification from './models/Notification';
-import { protect } from './middleware/auth';
-import sequelize from './config/db';
-import { seedData } from './seed';
+import { connectDB } from '../backend/src/config/db';
+import authRoutes from '../backend/src/routes/auth';
+import roomRoutes from '../backend/src/routes/rooms';
+import complaintRoutes from '../backend/src/routes/complaints';
+import foodMenuRoutes from '../backend/src/routes/foodMenu';
+import billRoutes from '../backend/src/routes/bills';
+import Student from '../backend/src/models/Student';
+import Room from '../backend/src/models/Room';
+import Complaint from '../backend/src/models/Complaint';
+import Bill from '../backend/src/models/Bill';
+import NotificationModel from '../backend/src/models/Notification'; // Renamed to avoid collision with global Notification
+import { protect } from '../backend/src/middleware/auth';
+import sequelize from '../backend/src/config/db';
+import { seedData } from '../backend/src/seed';
 
 // Establish Associations
 Room.hasMany(Student, { foreignKey: 'roomId', as: 'occupants' });
@@ -22,8 +22,8 @@ Student.hasMany(Complaint, { foreignKey: 'studentId' });
 Complaint.belongsTo(Student, { foreignKey: 'studentId' });
 Student.hasMany(Bill, { foreignKey: 'studentId' });
 Bill.belongsTo(Student, { foreignKey: 'studentId' });
- Student.hasMany(Notification, { foreignKey: 'studentId' });
-Notification.belongsTo(Student, { foreignKey: 'studentId' });
+Student.hasMany(NotificationModel, { foreignKey: 'studentId' });
+NotificationModel.belongsTo(Student, { foreignKey: 'studentId' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,7 +34,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 // Request Logger
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
@@ -53,9 +53,9 @@ const initDB = async () => {
   }
 };
 
-// Lazy initialization of database
+// Lazy initialization of database (Vercel serverless optimization)
 let isDBConnected = false;
-app.use(async (req, res, next) => {
+app.use(async (_req, _res, next) => {
   if (!isDBConnected) {
     await initDB();
     isDBConnected = true;
@@ -73,13 +73,13 @@ app.use('/api/bills', billRoutes);
 // Student Book Request
 app.post('/api/students/book-request', protect, async (req: any, res) => {
   try {
-    const { roomType, roomId } = req.body;
+    const { roomId } = req.body;
     const student = await Student.findByPk(req.user.id);
     if (!student) return res.status(404).json({ message: 'Student not found' });
     
     await student.update({ 
       bookingStatus: 'Pending',
-      roomId: roomId // temporary or preferred room
+      roomId: roomId 
     });
     res.json(student);
   } catch (error: any) {
@@ -87,9 +87,7 @@ app.post('/api/students/book-request', protect, async (req: any, res) => {
   }
 });
 
-// Advanced Features: All Students for Admin
-
-// Get all students
+// Get all students (Admin)
 app.get('/api/students', protect, async (req: any, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
@@ -103,19 +101,18 @@ app.get('/api/students', protect, async (req: any, res) => {
   }
 });
 
-// Manage Booking Status
+// Manage Booking Status (Admin)
 app.patch('/api/students/:id/booking', protect, async (req: any, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     const { status } = req.body;
-    const student = await Student.findByPk(req.params.id);
+    const student = await Student.findByPk(Number(req.params.id));
     if (!student) return res.status(404).json({ message: 'Student not found' });
     
     await student.update({ bookingStatus: status });
     
-    // Auto-notify student (In SQL we use the Notification model)
-    const { default: Notification } = await import('./models/Notification');
-    await Notification.create({
+    // Auto-notify student
+    await NotificationModel.create({
       studentId: student.id,
       title: 'Booking Update',
       message: `Your room booking status has been updated to: ${status}`,
@@ -128,14 +125,13 @@ app.patch('/api/students/:id/booking', protect, async (req: any, res) => {
   }
 });
 
-// Internal Notify Route
+// Internal Notify Route (Admin)
 app.post('/api/students/:id/notify', protect, async (req: any, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     const { title, message, type } = req.body;
     
-    const { default: Notification } = await import('./models/Notification');
-    const notif = await Notification.create({
+    const notif = await NotificationModel.create({
       studentId: Number(req.params.id),
       title,
       message,
@@ -153,13 +149,12 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', message: 'Hostel Management API is running' });
 });
 
+// Local development server
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
-    console.log('');
-    console.log('🏨 Hostel Management System API');
-    console.log(`🌐 Server running on http://localhost:${PORT}`);
-    console.log(`📡 API Base: http://localhost:${PORT}/api`);
-    console.log('');
+    console.log(`\n🌐 Local server running on http://localhost:${PORT}`);
+    console.log(`📡 API Base: http://localhost:${PORT}/api\n`);
   });
 }
+
 export default app;
