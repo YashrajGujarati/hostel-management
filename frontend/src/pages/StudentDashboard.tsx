@@ -6,7 +6,7 @@ import axios from 'axios';
 import Counter from '../components/Counter';
 import HostelMap from '../components/HostelMap';
 
-const API = 'http://localhost:5000/api';
+import API from '../apiConfig';
 
 const StudentDashboard = () => {
   const { user } = useAuth();

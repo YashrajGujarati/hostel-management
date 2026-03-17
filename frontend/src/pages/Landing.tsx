@@ -6,7 +6,7 @@ import axios from 'axios';
 import Counter from '../components/Counter';
 import Logo from '../components/Logo';
 
-const API = 'http://localhost:5000/api';
+import API from '../apiConfig';
 
 const facilities = [
   { icon: '📶', title: 'High-Speed WiFi', desc: 'Unlimited internet access throughout the hostel' },

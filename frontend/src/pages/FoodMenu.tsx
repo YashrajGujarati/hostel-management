@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+import API from '../apiConfig';
 
 const FoodMenu = () => {
   const [menu, setMenu] = useState<any[]>([]);

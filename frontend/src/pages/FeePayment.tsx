@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import Logo from '../components/Logo';
 
-const API = 'http://localhost:5000/api';
+import API from '../apiConfig';
 
 const durations = [
   { months: 1, label: '1 Month', desc: 'Monthly' },

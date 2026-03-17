@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+import API from '../apiConfig';
 
 const Rooms = () => {
   const { user } = useAuth();
