@@ -30,13 +30,11 @@ export const connectDB = async (): Promise<void> => {
   try {
     await sequelize.authenticate();
     console.log('✅ MySQL (XAMPP) Connected successfully.');
-    
-    // Sync models - in production you would use migrations
-    // await sequelize.sync({ alter: true });
   } catch (error) {
     console.error('❌ Unable to connect to the MySQL database:', error);
     process.exit(1);
   }
 };
 
+export { sequelize };
 export default sequelize;
