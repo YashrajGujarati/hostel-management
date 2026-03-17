@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from './Logo';
-import toast from 'react-hot-toast';
 
 const Navbar = () => {
   const { user, logout, uploadPhoto } = useAuth();
@@ -13,18 +12,18 @@ const Navbar = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
-  const [showPasswordChange, setShowPasswordChange] = useState(false);
-  const [passwords, setPasswords] = useState({ old: '', new: '' });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,7 +52,6 @@ const Navbar = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate size (limit to 2MB for base64 storage)
     if (file.size > 2 * 1024 * 1024) {
       alert("Image is too large. Please select an image under 2MB.");
       return;
@@ -78,7 +76,6 @@ const Navbar = () => {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
-    { path: '/rooms', label: 'Rooms' },
     { path: '/facilities', label: 'Facilities' },
     { path: '/gallery', label: 'Gallery' },
     { path: '/rules', label: 'Rules' },
@@ -86,24 +83,12 @@ const Navbar = () => {
   ];
 
   if (user) {
-    if (user.role === 'admin') {
-      navLinks.push({ path: '/admin', label: 'Dashboard' });
-    } else {
-      navLinks.push({ path: '/dashboard', label: 'Dashboard' });
-      navLinks.push({ path: '/complaints', label: 'Complaints' });
-    }
+    navLinks.push({ path: '/rooms', label: 'Rooms' });
   }
-
-  const handlePasswordChange = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Password changed successfully! 🔐");
-    setShowPasswordChange(false);
-    setPasswords({ old: '', new: '' });
-  };
 
   return (
     <motion.nav
-      className="navbar"
+      className={`navbar ${scrolled ? 'scrolled' : ''}`}
       initial={{ y: -80 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -146,7 +131,6 @@ const Navbar = () => {
       <div className="navbar-auth">
         {user ? (
           <>
-            {/* Notifications */}
             <div className="profile-menu-container" ref={notifRef}>
               <div 
                 className="profile-avatar-btn" 
@@ -198,7 +182,6 @@ const Navbar = () => {
               </AnimatePresence>
             </div>
 
-            {/* Profile */}
             <div className="profile-menu-container" ref={profileRef}>
               <div
                 className="profile-avatar-btn"
@@ -246,18 +229,16 @@ const Navbar = () => {
                       <div className="profile-dropdown-info">
                         <h4 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{user.name}</h4>
                         <div style={{ fontSize: '0.7rem', color: 'var(--accent-blue)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
-                           ID: {user._id.substring(user._id.length - 8).toUpperCase()}
+                           ID: {user._id?.toString().slice(-8).toUpperCase()}
                         </div>
                         <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>{user.email}</p>
                       </div>
                     </div>
 
                     <div className="profile-dropdown-body" style={{ padding: '0 1rem 1rem' }}>
-                      {/* Theme Switcher */}
-                      <div className="theme-switcher">
-                        <button className={`theme-btn ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>🌙 Dark</button>
-                        <button className={`theme-btn ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>☀️ Light</button>
-                      </div>
+                      <Link to="/profile" className="profile-dropdown-item" onClick={() => setProfileOpen(false)}>
+                        👤 My Profile
+                      </Link>
 
                       {user.role !== 'admin' ? (
                         <Link to="/dashboard" className="profile-dropdown-item" onClick={() => setProfileOpen(false)}>
@@ -268,27 +249,6 @@ const Navbar = () => {
                           🏨 Admin Panel
                         </Link>
                       )}
-
-                      <button className="profile-dropdown-item" onClick={() => setShowPasswordChange(!showPasswordChange)}>
-                        🔐 Change Password
-                      </button>
-
-                      <AnimatePresence>
-                        {showPasswordChange && (
-                          <motion.div 
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            style={{ overflow: 'hidden' }}
-                          >
-                            <form className="password-form" onSubmit={handlePasswordChange}>
-                              <input type="password" placeholder="Old Password" className="form-input" style={{ fontSize: '0.8rem', padding: '8px' }} required value={passwords.old} onChange={e => setPasswords({...passwords, old: e.target.value})} />
-                              <input type="password" placeholder="New Password" className="form-input" style={{ fontSize: '0.8rem', padding: '8px' }} required value={passwords.new} onChange={e => setPasswords({...passwords, new: e.target.value})} />
-                              <button type="submit" className="btn btn-primary btn-sm">Update</button>
-                            </form>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
 
                       <hr style={{ border: 'none', borderTop: '1px solid var(--border-glass)', margin: '0.5rem 0' }} />
                       

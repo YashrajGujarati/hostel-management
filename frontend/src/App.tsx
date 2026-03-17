@@ -17,6 +17,9 @@ import Gallery from './pages/Gallery';
 import ContactUs from './pages/ContactUs';
 import Booking from './pages/Booking';
 import Rules from './pages/Rules';
+import Profile from './pages/Profile';
+import ScrollToTop from './components/ScrollToTop';
+import BackToTop from './components/BackToTop';
 import './index.css';
 
 const ProtectedRoute = ({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) => {
@@ -41,23 +44,28 @@ const AppRoutes = () => {
       <Route path="/rules" element={<Rules />} />
       <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} /> : <Login />} />
       <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
-      <Route path="/rooms" element={<Rooms />} />
+      <Route path="/rooms" element={<ProtectedRoute><Rooms /></ProtectedRoute>} />
       <Route path="/food-menu" element={<FoodMenu />} />
       <Route path="/dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
       <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
       <Route path="/pay-fees" element={<ProtectedRoute><FeePayment /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 };
 
+
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <Navbar />
         <AppRoutes />
+        <BackToTop />
         <Toaster position="top-center" toastOptions={{ duration: 3000, style: { background: '#111827', color: '#fff', border: '1px solid var(--border-glass)' } }} />
       </AuthProvider>
     </Router>

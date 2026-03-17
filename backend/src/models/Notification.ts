@@ -1,18 +1,17 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/db';
 
-class Complaint extends Model {
+class Notification extends Model {
   public id!: number;
   public studentId!: number;
   public title!: string;
-  public description!: string;
-  public category!: string;
-  public status!: 'Open' | 'Resolved' | 'Closed';
-  public comment!: string;
+  public message!: string;
+  public type!: 'info' | 'success' | 'warning' | 'reminder';
+  public read!: boolean;
   public readonly createdAt!: Date;
 }
 
-Complaint.init({
+Notification.init({
   id: {
     type: DataTypes.INTEGER.UNSIGNED,
     autoIncrement: true,
@@ -30,25 +29,22 @@ Complaint.init({
     type: DataTypes.STRING(255),
     allowNull: false,
   },
-  description: {
+  message: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  category: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
+  type: {
+    type: DataTypes.ENUM('info', 'success', 'warning', 'reminder'),
+    defaultValue: 'info',
   },
-  status: {
-    type: DataTypes.ENUM('Open', 'Resolved', 'Closed'),
-    defaultValue: 'Open',
-  },
-  comment: {
-    type: DataTypes.TEXT,
-    defaultValue: '',
+  read: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   }
 }, {
   sequelize,
-  tableName: 'complaints',
+  tableName: 'notifications',
+  updatedAt: false,
 });
 
-export default Complaint;
+export default Notification;

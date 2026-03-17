@@ -108,9 +108,25 @@ const Rooms = () => {
                 ))}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                <div className={`room-availability ${room.isAvailable ? 'available' : 'occupied'}`}>
-                  <span className="availability-dot"></span>
-                  {room.isAvailable ? 'Available' : 'Occupied'}
+                <div className={`room-availability ${room.isAvailable ? 'available' : 'occupied'}`} style={{ 
+                  padding: '0.4rem 0.8rem', 
+                  borderRadius: '20px', 
+                  background: room.isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+                  color: room.isAvailable ? '#10b981' : '#f43f5e',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span className="availability-dot" style={{ 
+                    width: '8px', 
+                    height: '8px', 
+                    borderRadius: '50%', 
+                    background: room.isAvailable ? '#10b981' : '#f43f5e',
+                    boxShadow: room.isAvailable ? '0 0 10px #10b981' : 'none'
+                  }}></span>
+                  {room.isAvailable ? 'AVAILABLE' : 'OCCUPIED'}
                 </div>
                 {room.isAvailable && (
                   <button

@@ -104,28 +104,28 @@ const StudentDashboard = () => {
       </motion.div>
 
       {/* Quick Actions */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <h3 style={{ marginBottom: '1rem', fontSize: '1.2rem', fontWeight: 700 }}>Quick Actions</h3>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ marginTop: '3rem' }}>
+        <h3 style={{ marginBottom: '1.5rem', fontSize: '1.2rem', fontWeight: 800 }}>Quick Navigation</h3>
         <div className="quick-access">
-          <Link to="/rooms" className="quick-access-card">
+          <Link to="/rooms" className="quick-access-card" style={{ background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
             <span className="quick-access-icon">🏠</span>
             <h4>{room ? 'Change Room' : 'Book a Room'}</h4>
-            <p>{room ? `Currently in Room ${room.roomNumber}` : 'Select your room'}</p>
+            <p style={{ fontSize: '0.75rem' }}>{room ? `Room ${room.roomNumber}` : 'Select your stay'}</p>
           </Link>
-          <Link to="/food-menu" className="quick-access-card">
+          <Link to="/food-menu" className="quick-access-card" style={{ background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
             <span className="quick-access-icon">🍽️</span>
             <h4>Food Menu</h4>
-            <p>This week's menu</p>
+            <p style={{ fontSize: '0.75rem' }}>View meals</p>
           </Link>
-          <Link to="/complaints" className="quick-access-card">
+          <Link to="/complaints" className="quick-access-card" style={{ background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
             <span className="quick-access-icon">📝</span>
-            <h4>File Complaint</h4>
-            <p>Report an issue</p>
+            <h4>Complaints</h4>
+            <p style={{ fontSize: '0.75rem' }}>Report issues</p>
           </Link>
-          <Link to="/pay-fees" className="quick-access-card">
+          <Link to="/pay-fees" className="quick-access-card" style={{ background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
             <span className="quick-access-icon">💳</span>
-            <h4>Pay Fees</h4>
-            <p>Generate bill & pay</p>
+            <h4>Payments</h4>
+            <p style={{ fontSize: '0.75rem' }}>Manage bills</p>
           </Link>
         </div>
       </motion.div>

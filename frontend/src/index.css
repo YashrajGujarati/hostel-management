@@ -136,7 +136,39 @@ textarea {
   backdrop-filter: blur(20px);
   background: rgba(10, 14, 26, 0.85);
   border-bottom: 1px solid var(--border-glass);
+  transition: all var(--transition-normal);
+}
+
+.navbar.scrolled {
+  background: rgba(10, 14, 26, 0.85);
+  border-bottom: 1px solid var(--border-glass);
+  padding: 0.6rem 2rem;
+}
+
+/* ============ BACK TO TOP ============ */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  width: 45px;
+  height: 45px;
+  background: var(--gradient-accent);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 900;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+  z-index: 1000;
+  cursor: pointer;
   transition: var(--transition-normal);
+}
+
+.back-to-top:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.5);
 }
 
 .navbar-brand {

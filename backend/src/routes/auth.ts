@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import Student from '../models/Student';
+import Room from '../models/Room';
 import { AuthRequest, generateToken, protect } from '../middleware/auth';
 
 const router = Router();
@@ -9,23 +10,24 @@ router.post('/signup', async (req: AuthRequest, res: Response): Promise<void> =>
   try {
     const { name, email, password, phone } = req.body;
 
-    const existingUser = await Student.findOne({ email });
+    const existingUser = await Student.findOne({ where: { email } });
     if (existingUser) {
       res.status(400).json({ message: 'Email already registered' });
       return;
     }
 
     const student = await Student.create({ name, email, password, phone });
-    const token = generateToken(student._id as unknown as string, student.role);
+    const token = generateToken(student.id.toString(), student.role);
 
     res.status(201).json({
-      _id: student._id,
+      _id: student.id.toString(),
       name: student.name,
       email: student.email,
       phone: student.phone,
       role: student.role,
       roomId: student.roomId,
       profilePhoto: student.profilePhoto,
+      theme: student.theme,
       token
     });
   } catch (error: any) {
@@ -38,7 +40,7 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
   try {
     const { email, password } = req.body;
 
-    const student = await Student.findOne({ email });
+    const student = await Student.findOne({ where: { email } });
     if (!student) {
       res.status(401).json({ message: 'Invalid email or password' });
       return;
@@ -50,16 +52,17 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
       return;
     }
 
-    const token = generateToken(student._id as unknown as string, student.role);
+    const token = generateToken(student.id.toString(), student.role);
 
     res.json({
-      _id: student._id,
+      _id: student.id.toString(),
       name: student.name,
       email: student.email,
       phone: student.phone,
       role: student.role,
       roomId: student.roomId,
       profilePhoto: student.profilePhoto,
+      theme: student.theme,
       token
     });
   } catch (error: any) {
@@ -70,8 +73,18 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
 // GET /api/auth/me
 router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const student = await Student.findById(req.user._id).select('-password').populate('roomId');
-    res.json(student);
+    const student = await Student.findByPk(req.user.id, {
+      attributes: { exclude: ['password'] },
+      include: [Room]
+    });
+    if (!student) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    const user = student.toJSON();
+    user._id = user.id.toString();
+    res.json(user);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -82,13 +95,45 @@ router.patch('/profile-photo', protect, async (req: AuthRequest, res: Response):
   try {
     const { profilePhoto } = req.body;
     
-    const student = await Student.findByIdAndUpdate(
-      req.user._id,
-      { profilePhoto },
-      { new: true }
-    ).select('-password');
+    const student = await Student.findByPk(req.user.id);
+    if (!student) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    await student.update({ profilePhoto });
+    const updated = student.toJSON();
+    delete updated.password;
+    updated._id = updated.id.toString();
 
-    res.json(student);
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+});
+
+// PATCH /api/auth/profile — Update profile (name, phone, password, theme)
+router.patch('/profile', protect, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { name, phone, password, theme } = req.body;
+    const student = await Student.findByPk(req.user.id);
+    if (!student) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    if (name) student.name = name;
+    if (phone) student.phone = phone;
+    if (theme) student.theme = theme;
+    if (password) student.password = password; // beforeSave hook will hash it
+
+    await student.save();
+    
+    const updated = student.toJSON();
+    delete updated.password;
+    updated._id = updated.id.toString();
+
+    res.json(updated);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }

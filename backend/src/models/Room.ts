@@ -1,27 +1,71 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../config/db';
+import Student from './Student';
 
-export interface IRoom extends Document {
-  roomNumber: string;
-  type: 'Single' | 'Double' | 'Triple';
-  floor: number;
-  price: number;
-  isAvailable: boolean;
-  amenities: string[];
-  capacity: number;
-  occupants: mongoose.Types.ObjectId[];
-  description: string;
+class Room extends Model {
+  public id!: number;
+  public roomNumber!: string;
+  public type!: 'Single' | 'Double' | 'Triple';
+  public floor!: number;
+  public price!: number;
+  public isAvailable!: boolean;
+  public amenities!: string; // Stored as JSON string or comma-separated
+  public capacity!: number;
+  public description!: string;
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
-const RoomSchema = new Schema<IRoom>({
-  roomNumber: { type: String, required: true, unique: true },
-  type: { type: String, enum: ['Single', 'Double', 'Triple'], required: true },
-  floor: { type: Number, required: true },
-  price: { type: Number, required: true },
-  isAvailable: { type: Boolean, default: true },
-  amenities: [{ type: String }],
-  capacity: { type: Number, required: true },
-  occupants: [{ type: Schema.Types.ObjectId, ref: 'Student' }],
-  description: { type: String, default: '' }
+Room.init({
+  id: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  roomNumber: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    unique: true,
+  },
+  type: {
+    type: DataTypes.ENUM('Single', 'Double', 'Triple'),
+    allowNull: false,
+  },
+  floor: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  price: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  isAvailable: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
+  amenities: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    get() {
+      const rawValue = this.getDataValue('amenities');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value: string[]) {
+      this.setDataValue('amenities', JSON.stringify(value));
+    }
+  },
+  capacity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    defaultValue: '',
+  }
+}, {
+  sequelize,
+  tableName: 'rooms',
 });
 
-export default mongoose.model<IRoom>('Room', RoomSchema);
+export default Room;

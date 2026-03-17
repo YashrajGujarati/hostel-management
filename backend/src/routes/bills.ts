@@ -27,7 +27,7 @@ router.post('/generate', protect, async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    const room = await Room.findById(req.user.roomId);
+    const room = await Room.findByPk(req.user.roomId);
     if (!room) {
       res.status(404).json({ message: 'Room not found' });
       return;
@@ -40,20 +40,13 @@ router.post('/generate', protect, async (req: AuthRequest, res: Response): Promi
     const gstAmount = Math.round(subTotal * 0.18);
     const totalAmount = subTotal + gstAmount;
 
-    const bill = new Bill({
-      studentId: req.user._id,
-      studentName: req.user.name,
-      roomNumber: room.roomNumber,
-      roomType: room.type,
-      roomCharges,
-      foodCharges,
-      laundryCharges,
-      gstAmount,
-      totalAmount,
-      duration,
-      durationLabel: `${duration} Month${duration > 1 ? 's' : ''}`
+    const bill = await Bill.create({
+      studentId: req.user.id,
+      amount: totalAmount,
+      month: `${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`,
+      status: 'Unpaid',
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     });
-    await bill.save();
 
     res.status(201).json(bill);
   } catch (error: any) {
@@ -66,21 +59,21 @@ router.post('/:id/pay', protect, async (req: AuthRequest, res: Response): Promis
   try {
     const { paymentMethod } = req.body;
 
-    const bill = await Bill.findById(req.params.id);
+    const bill = await Bill.findByPk(req.params.id);
     if (!bill) {
       res.status(404).json({ message: 'Bill not found' });
       return;
     }
 
-    if (bill.paymentStatus === 'Paid') {
+    if (bill.status === 'Paid') {
       res.status(400).json({ message: 'Bill already paid' });
       return;
     }
 
-    bill.paymentMethod = paymentMethod;
-    bill.paymentStatus = 'Paid';
-    bill.paidAt = new Date();
-    await bill.save();
+    await bill.update({
+      status: 'Paid',
+      paidDate: new Date()
+    });
 
     res.json(bill);
   } catch (error: any) {
@@ -93,9 +86,12 @@ router.get('/', protect, async (req: AuthRequest, res: Response): Promise<void> 
   try {
     let bills;
     if (req.user.role === 'admin') {
-      bills = await Bill.find().sort({ generatedAt: -1 });
+      bills = await Bill.findAll({ order: [['createdAt', 'DESC']] });
     } else {
-      bills = await Bill.find({ studentId: req.user._id }).sort({ generatedAt: -1 });
+      bills = await Bill.findAll({ 
+        where: { studentId: req.user.id },
+        order: [['createdAt', 'DESC']]
+      });
     }
     res.json(bills);
   } catch (error: any) {

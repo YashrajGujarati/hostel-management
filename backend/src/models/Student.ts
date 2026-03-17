@@ -1,56 +1,89 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../config/db';
+import Room from './Room';
 import bcrypt from 'bcryptjs';
 
-export interface IStudent extends Document {
-  name: string;
-  email: string;
-  password: string;
-  phone: string;
-  roomId?: mongoose.Types.ObjectId;
-  bookingStatus: 'None' | 'Pending' | 'Approved' | 'Rejected';
-  profilePhoto?: string;
-  role: 'student' | 'admin';
-  notifications: Array<{
-    id: string;
-    title: string;
-    message: string;
-    type: 'info' | 'success' | 'warning' | 'reminder';
-    read: boolean;
-    createdAt: Date;
-  }>;
-  createdAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
+class Student extends Model {
+  public id!: number;
+  public name!: string;
+  public email!: string;
+  public password!: string;
+  public phone!: string;
+  public roomId!: number | null;
+  public bookingStatus!: 'None' | 'Pending' | 'Approved' | 'Rejected';
+  public profilePhoto!: string | null;
+  public theme!: 'dark' | 'light';
+  public role!: 'student' | 'admin';
+
+  public async comparePassword(candidatePassword: string): Promise<boolean> {
+    return bcrypt.compare(candidatePassword, this.password);
+  }
+
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
-const StudentSchema = new Schema<IStudent>({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true, minlength: 6 },
-  phone: { type: String, required: true },
-  roomId: { type: Schema.Types.ObjectId, ref: 'Room', default: null },
-  bookingStatus: { type: String, enum: ['None', 'Pending', 'Approved', 'Rejected'], default: 'None' },
-  profilePhoto: { type: String, default: null },
-  role: { type: String, enum: ['student', 'admin'], default: 'student' },
-  notifications: [{
-    id: { type: String, required: true },
-    title: { type: String, required: true },
-    message: { type: String, required: true },
-    type: { type: String, enum: ['info', 'success', 'warning', 'reminder'], default: 'info' },
-    read: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now }
-  }],
-  createdAt: { type: Date, default: Date.now }
+Student.init({
+  id: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  name: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true,
+    }
+  },
+  password: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  phone: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+  },
+  roomId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: true,
+    references: {
+      model: 'rooms',
+      key: 'id',
+    }
+  },
+  bookingStatus: {
+    type: DataTypes.ENUM('None', 'Pending', 'Approved', 'Rejected'),
+    defaultValue: 'None',
+  },
+  profilePhoto: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  theme: {
+    type: DataTypes.STRING(10),
+    defaultValue: 'dark',
+  },
+  role: {
+    type: DataTypes.ENUM('student', 'admin'),
+    defaultValue: 'student',
+  }
+}, {
+  sequelize,
+  tableName: 'students',
+  hooks: {
+    beforeSave: async (student: Student) => {
+      if (student.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        student.password = await bcrypt.hash(student.password, salt);
+      }
+    }
+  }
 });
 
-StudentSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-StudentSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
-export default mongoose.model<IStudent>('Student', StudentSchema);
+export default Student;

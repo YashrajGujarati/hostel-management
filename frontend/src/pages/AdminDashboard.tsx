@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -17,6 +17,11 @@ const AdminDashboard = () => {
   const [tab, setTab] = useState('complaints');
   const [students, setStudents] = useState<any[]>([]);
   const [resolveId, setResolveId] = useState<string | null>(null);
+  const [showRoomModal, setShowRoomModal] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<any>(null);
+  const [roomForm, setRoomForm] = useState({
+    roomNumber: '', type: '2-Seater', capacity: 2, price: 5000, floor: 1, description: ''
+  });
 
   const updateBooking = async (studentId: string, status: string) => {
     try {
@@ -31,7 +36,38 @@ const AdminDashboard = () => {
     try {
       await axios.delete(`${API}/rooms/${id}`);
       fetchData();
-    } catch { }
+      toast.success("Room deleted");
+    } catch (err: any) { toast.error(err.response?.data?.message || "Delete failed"); }
+  };
+
+  const handleRoomSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingRoom) {
+        await axios.patch(`${API}/rooms/${editingRoom._id}`, roomForm);
+        toast.success("Room updated");
+      } else {
+        await axios.post(`${API}/rooms`, roomForm);
+        toast.success("Room added");
+      }
+      setShowRoomModal(false);
+      setEditingRoom(null);
+      setRoomForm({ roomNumber: '', type: '2-Seater', capacity: 2, price: 5000, floor: 1, description: '' });
+      fetchData();
+    } catch { toast.error("Operation failed"); }
+  };
+
+  const openEditRoom = (room: any) => {
+    setEditingRoom(room);
+    setRoomForm({
+      roomNumber: room.roomNumber,
+      type: room.type,
+      capacity: room.capacity,
+      price: room.price,
+      floor: room.floor,
+      description: room.description || ''
+    });
+    setShowRoomModal(true);
   };
   const [resolveResponse, setResolveResponse] = useState('');
   const [resolveStatus, setResolveStatus] = useState('Resolved');
@@ -147,9 +183,9 @@ const AdminDashboard = () => {
         </div>
       </motion.div>
 
-      <div className="tabs">
+      <div className="tabs" style={{ marginBottom: '2.5rem', background: 'var(--bg-glass)', padding: '0.4rem', borderRadius: 'var(--radius-xl)' }}>
         <button className={`tab ${tab === 'complaints' ? 'active' : ''}`} onClick={() => setTab('complaints')}>
-          🚨 Complaints ({pendingComplaints} pending)
+          🚨 Complaints
         </button>
         <button className={`tab ${tab === 'students' ? 'active' : ''}`} onClick={() => setTab('students')}>
           👥 Students
@@ -331,7 +367,16 @@ const AdminDashboard = () => {
       {tab === 'rooms' && (
         <div style={{ padding: '1rem' }}>
            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
-              <button className="btn btn-primary" onClick={() => toast("Add Room Modal - Coming Soon!")}>+ Add New Room</button>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => {
+                  setEditingRoom(null);
+                  setRoomForm({ roomNumber: '', type: '2-Seater', capacity: 2, price: 5000, floor: 1, description: '' });
+                  setShowRoomModal(true);
+                }}
+              >
+                + Add New Room
+              </button>
            </div>
            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem' }}>
               {rooms.map(room => (
@@ -347,10 +392,16 @@ const AdminDashboard = () => {
                     transition: '0.3s'
                   }}
                 >
-                  <button 
-                    onClick={() => deleteRoom(room._id)}
-                    style={{ position: 'absolute', top: '5px', right: '5px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem' }}
-                  >🗑️</button>
+                   <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '5px' }}>
+                    <button 
+                      onClick={() => openEditRoom(room)}
+                      style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: '0.8rem', padding: '5px' }}
+                    >✏️</button>
+                    <button 
+                      onClick={() => deleteRoom(room._id)}
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', padding: '5px' }}
+                    >🗑️</button>
+                  </div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{room.roomNumber}</div>
                   <div style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: '8px' }}>{room.type}</div>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: room.isAvailable ? '#10b981' : '#f43f5e' }}>
@@ -361,6 +412,64 @@ const AdminDashboard = () => {
            </div>
         </div>
       )}
+
+      {/* ADD/EDIT ROOM MODAL */}
+      <AnimatePresence>
+        {showRoomModal && (
+          <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <motion.div 
+              className="glass-card" 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              style={{ width: '100%', maxWidth: '500px', border: '1px solid var(--accent-blue)' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem' }}>{editingRoom ? 'Edit Room 🏠' : 'Add New Room 🏠'}</h2>
+                <button onClick={() => setShowRoomModal(false)} style={{ background: 'none', color: 'white', fontSize: '1.5rem' }}>×</button>
+              </div>
+              <form onSubmit={handleRoomSubmit} style={{ display: 'grid', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label>Room Number</label>
+                    <input type="text" className="form-input" value={roomForm.roomNumber} onChange={e => setRoomForm({...roomForm, roomNumber: e.target.value})} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Price (₹)</label>
+                    <input type="number" className="form-input" value={roomForm.price} onChange={e => setRoomForm({...roomForm, price: Number(e.target.value)})} required />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label>Room Type</label>
+                    <select className="form-select" value={roomForm.type} onChange={e => setRoomForm({...roomForm, type: e.target.value})}>
+                      <option value="1-Seater">1-Seater</option>
+                      <option value="2-Seater">2-Seater</option>
+                      <option value="3-Seater">3-Seater</option>
+                      <option value="4-Seater">4-Seater</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Floor</label>
+                    <input type="number" className="form-input" value={roomForm.floor} onChange={e => setRoomForm({...roomForm, floor: Number(e.target.value)})} required />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Max Capacity</label>
+                  <input type="number" className="form-input" value={roomForm.capacity} onChange={e => setRoomForm({...roomForm, capacity: Number(e.target.value)})} required />
+                </div>
+                <div className="form-group">
+                  <label>Description (Optional)</label>
+                  <textarea className="form-textarea" value={roomForm.description} onChange={e => setRoomForm({...roomForm, description: e.target.value})} rows={3}></textarea>
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                  {editingRoom ? 'Update Room' : 'Add Room'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

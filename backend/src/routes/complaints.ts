@@ -1,6 +1,8 @@
 import { Router, Response } from 'express';
 import Complaint from '../models/Complaint';
-import { AuthRequest, protect, adminOnly } from '../middleware/auth';
+import Student from '../models/Student';
+import Room from '../models/Room';
+import { AuthRequest, protect, adminOnly, generateToken } from '../middleware/auth';
 
 const router = Router();
 
@@ -10,10 +12,9 @@ router.post('/', protect, async (req: AuthRequest, res: Response): Promise<void>
     const { category, subject, description } = req.body;
 
     const complaint = await Complaint.create({
-      studentId: req.user._id,
-      studentName: req.user.name,
+      studentId: req.user.id,
       category,
-      subject,
+      title: subject,
       description
     });
 
@@ -28,9 +29,15 @@ router.get('/', protect, async (req: AuthRequest, res: Response): Promise<void> 
   try {
     let complaints;
     if (req.user.role === 'admin') {
-      complaints = await Complaint.find().sort({ createdAt: -1 }).populate('studentId', 'name email phone');
+      complaints = await Complaint.findAll({
+        order: [['createdAt', 'DESC']],
+        include: [{ model: Student, attributes: ['name', 'email', 'phone'] }]
+      });
     } else {
-      complaints = await Complaint.find({ studentId: req.user._id }).sort({ createdAt: -1 });
+      complaints = await Complaint.findAll({
+        where: { studentId: req.user.id },
+        order: [['createdAt', 'DESC']]
+      });
     }
     res.json(complaints);
   } catch (error: any) {
@@ -43,20 +50,16 @@ router.patch('/:id/resolve', protect, adminOnly, async (req: AuthRequest, res: R
   try {
     const { status, adminResponse } = req.body;
 
-    const complaint = await Complaint.findByIdAndUpdate(
-      req.params.id,
-      {
-        status: status || 'Resolved',
-        adminResponse,
-        resolvedAt: status === 'Resolved' ? new Date() : undefined
-      },
-      { new: true }
-    );
-
+    const complaint = await Complaint.findByPk(req.params.id);
     if (!complaint) {
       res.status(404).json({ message: 'Complaint not found' });
       return;
     }
+
+    await complaint.update({
+      status: status || 'Resolved',
+      comment: adminResponse
+    });
 
     res.json(complaint);
   } catch (error: any) {
