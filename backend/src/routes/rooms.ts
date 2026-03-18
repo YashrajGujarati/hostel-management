@@ -7,8 +7,9 @@ const router = Router();
 
 router.get('/', async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
+    console.log('📡 Fetching rooms from database...');
     const rooms = await Room.find();
-    // In Mongoose, we don't need manual mapping for _id unless we want to hide it
+    console.log(`✅ Found ${rooms.length} rooms`);
     res.json(rooms);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
