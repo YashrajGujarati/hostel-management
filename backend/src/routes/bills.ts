@@ -80,6 +80,9 @@ router.post('/:id/pay', protect, async (req: AuthRequest, res: Response): Promis
     bill.paymentMethod = paymentMethod;
     await bill.save();
 
+    // Fetch room details for the receipt
+    const room = await Room.findById(req.user.roomId);
+
     // Populate student details for the receipt
     const populatedBill = await Bill.findById(bill._id).populate('studentId', 'name');
     

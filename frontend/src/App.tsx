@@ -62,6 +62,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <BackToTop />
       <AuthProvider>
         <Navbar />
         <AppRoutes />
