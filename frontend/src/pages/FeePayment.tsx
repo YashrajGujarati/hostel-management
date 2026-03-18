@@ -472,16 +472,43 @@ const FeePayment = () => {
               {bills.map(b => (
                 <div key={b._id} className="complaint-card">
                   <div className="complaint-header">
-                    <span className={`complaint-status ${b.paymentStatus === 'Paid' ? 'Resolved' : 'Pending'}`}>
-                      {b.paymentStatus}
+                    <span className={`complaint-status ${b.status === 'Paid' ? 'Resolved' : 'Pending'}`}>
+                      {b.status}
                     </span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      {new Date(b.generatedAt).toLocaleDateString('en-IN')}
+                      {new Date(b.createdAt || Date.now()).toLocaleDateString('en-IN')}
                     </span>
                   </div>
-                  <div className="complaint-subject">₹{b.totalAmount.toLocaleString()} — {b.durationLabel}</div>
-                  <div className="complaint-description">
-                    Room {b.roomNumber} ({b.roomType}) • {b.paymentMethod ? b.paymentMethod.replace('_', ' ').toUpperCase() : 'Not paid'}
+                  <div className="complaint-subject">₹{(b.amount || b.totalAmount || 0).toLocaleString()} — {b.durationLabel}</div>
+                  <div className="complaint-description" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Room {room?.roomNumber || 'N/A'} ({room?.type || 'Standard'}) • {b.paymentMethod ? b.paymentMethod.replace('_', ' ').toUpperCase() : 'Not paid'}</span>
+                    
+                    {b.status === 'Paid' && (
+                      <button 
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 600 }}
+                        onClick={() => {
+                          import('../utils/receiptGenerator').then(m => {
+                            m.generateReceiptPDF({
+                              id: b._id,
+                              studentName: user?.name || 'Student',
+                              roomNumber: room?.roomNumber || 'N/A',
+                              roomType: room?.type || 'Standard',
+                              amount: b.amount || b.totalAmount || 0,
+                              roomCharges: b.roomCharges || 0,
+                              foodCharges: b.foodCharges || 0,
+                              laundryCharges: b.laundryCharges || 0,
+                              gstAmount: b.gstAmount || 0,
+                              date: b.paidDate || b.createdAt || new Date(),
+                              duration: b.durationLabel || 'Monthly',
+                              paymentMethod: b.paymentMethod || 'Online'
+                            });
+                          });
+                        }}
+                      >
+                        📄 Download Receipt
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
