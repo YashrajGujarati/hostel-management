@@ -1,54 +1,35 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../config/db';
+import mongoose, { Schema, Document } from 'mongoose';
 
-class Bill extends Model {
-  public id!: number;
-  public studentId!: number;
-  public amount!: number;
-  public month!: string;
-  public status!: 'Paid' | 'Unpaid';
-  public dueDate!: Date;
-  public paidDate!: Date | null;
-  public readonly createdAt!: Date;
+export interface IBill extends Document {
+  studentId: mongoose.Types.ObjectId;
+  amount: number;
+  roomCharges: number;
+  foodCharges: number;
+  laundryCharges: number;
+  gstAmount: number;
+  duration: number; // in months
+  durationLabel: string;
+  status: 'Paid' | 'Unpaid';
+  paymentMethod: string;
+  dueDate: Date;
+  paidDate: Date | null;
 }
 
-Bill.init({
-  id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  studentId: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'students',
-      key: 'id',
-    }
-  },
-  amount: {
-    type: DataTypes.FLOAT,
-    allowNull: false,
-  },
-  month: {
-    type: DataTypes.STRING(20), // "January 2024"
-    allowNull: false,
-  },
-  status: {
-    type: DataTypes.ENUM('Paid', 'Unpaid'),
-    defaultValue: 'Unpaid',
-  },
-  dueDate: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  paidDate: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  }
+const BillSchema: Schema = new Schema({
+  studentId: { type: Schema.Types.ObjectId, ref: 'Student', required: true },
+  amount: { type: Number, required: true },
+  roomCharges: { type: Number, required: true },
+  foodCharges: { type: Number, required: true },
+  laundryCharges: { type: Number, required: true },
+  gstAmount: { type: Number, required: true },
+  duration: { type: Number, required: true },
+  durationLabel: { type: String, required: true },
+  status: { type: String, enum: ['Paid', 'Unpaid'], default: 'Unpaid' },
+  paymentMethod: { type: String, default: '' },
+  dueDate: { type: Date, required: true },
+  paidDate: { type: Date, default: null }
 }, {
-  sequelize,
-  tableName: 'bills',
+  timestamps: true
 });
 
-export default Bill;
+export default mongoose.model<IBill>('Bill', BillSchema);

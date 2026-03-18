@@ -26,9 +26,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     }
 
     const decoded: any = jwt.verify(token, JWT_SECRET);
-    req.user = await Student.findByPk(decoded.id, {
-      attributes: { exclude: ['password'] }
-    });
+    req.user = await Student.findById(decoded.id).select('-password');
 
     if (!req.user) {
       res.status(401).json({ message: 'Not authorized, user not found' });

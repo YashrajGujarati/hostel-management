@@ -71,7 +71,7 @@ const Rooms = () => {
       </motion.div>
 
       <div className="tabs">
-        {['All', 'Available', 'Single', 'Double', 'Triple'].map(f => (
+        {['All', 'Available', '1-Seater', '2-Seater', '3-Seater', '4-Seater'].map(f => (
           <button key={f} className={`tab ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>
         ))}
       </div>
@@ -79,7 +79,7 @@ const Rooms = () => {
       <motion.div className="rooms-grid" variants={container} initial="hidden" animate="show">
         {filtered.map(room => (
           <motion.div
-            key={room._id}
+            key={room._id || room.id}
             className="room-card"
             variants={item}
             onMouseEnter={() => setHoveredRoom(room)}
@@ -87,7 +87,7 @@ const Rooms = () => {
           >
             <div className="room-card-image" style={{ height: '180px', overflow: 'hidden', position: 'relative' }}>
               <img 
-                src={room.type === 'Single' ? '/room-single.png' : (room.type === 'Double' ? '/room-double.png' : '/room-triple.png')} 
+                src={room.type === '1-Seater' ? '/room-single.png' : (room.type === '2-Seater' ? '/room-double.png' : '/room-triple.png')} 
                 alt={room.type} 
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
               />
@@ -97,15 +97,15 @@ const Rooms = () => {
               <span className="room-number">Room {room.roomNumber}</span>
             </div>
             <div className="room-card-body">
-              <div className="room-price">₹{room.price.toLocaleString()} <span>/month</span></div>
+              <div className="room-price">₹{room.price?.toLocaleString() || room.price} <span>/month</span></div>
               <p className="room-description">{room.description}</p>
               <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 Floor {room.floor} • Capacity: {room.capacity}
               </div>
               <div className="room-amenities">
-                {room.amenities.map((a: string, i: number) => (
+                {room.amenities?.map((a: string, i: number) => (
                   <span key={i} className="amenity-tag">{a}</span>
-                ))}
+                )) || <span className="text-muted">No amenities listed</span>}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
                 <div className={`room-availability ${room.isAvailable ? 'available' : 'occupied'}`} style={{ 
@@ -159,7 +159,7 @@ const Rooms = () => {
           </div>
           <div className="preview-row">
             <span className="preview-label">Price</span>
-            <span className="preview-value">₹{hoveredRoom.price.toLocaleString()}/mo</span>
+            <span className="preview-value">₹{hoveredRoom.price?.toLocaleString() || hoveredRoom.price}/mo</span>
           </div>
           <div className="preview-row">
             <span className="preview-label">Capacity</span>
@@ -173,7 +173,7 @@ const Rooms = () => {
           </div>
           <div className="preview-row">
             <span className="preview-label">Amenities</span>
-            <span className="preview-value">{hoveredRoom.amenities.join(', ')}</span>
+            <span className="preview-value">{hoveredRoom.amenities?.join(', ') || 'N/A'}</span>
           </div>
         </div>
       )}

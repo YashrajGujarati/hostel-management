@@ -8,7 +8,7 @@ const router = Router();
 router.get('/', async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
     const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const menu = await FoodMenu.findAll();
+    const menu = await FoodMenu.find();
     const sorted = menu.sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
     res.json(sorted);
   } catch (error: any) {
@@ -22,19 +22,14 @@ router.put('/', protect, adminOnly, async (req: AuthRequest, res: Response): Pro
     const { menu } = req.body; // array of { day, morning, afternoon, night }
 
     for (const item of menu) {
-      const existing = await FoodMenu.findOne({ where: { day: item.day } });
-      if (existing) {
-        await existing.update({
-          morning: item.morning,
-          afternoon: item.afternoon,
-          night: item.night
-        });
-      } else {
-        await FoodMenu.create(item);
-      }
+      await FoodMenu.findOneAndUpdate(
+        { day: item.day },
+        { morning: item.morning, afternoon: item.afternoon, night: item.night },
+        { upsert: true }
+      );
     }
 
-    const updatedMenu = await FoodMenu.findAll();
+    const updatedMenu = await FoodMenu.find();
     res.json(updatedMenu);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });

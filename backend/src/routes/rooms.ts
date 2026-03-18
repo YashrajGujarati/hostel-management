@@ -7,16 +7,9 @@ const router = Router();
 
 router.get('/', async (_req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const rooms = await Room.findAll({
-      include: [{ model: Student, as: 'occupants', attributes: ['name', 'email'] }]
-    });
-    // Map id to _id for frontend compatibility
-    const mapped = rooms.map(r => {
-      const json = r.toJSON();
-      json._id = json.id.toString();
-      return json;
-    });
-    res.json(mapped);
+    const rooms = await Room.find();
+    // In Mongoose, we don't need manual mapping for _id unless we want to hide it
+    res.json(rooms);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -25,16 +18,12 @@ router.get('/', async (_req: AuthRequest, res: Response): Promise<void> => {
 // GET /api/rooms/:id — Get single room details
 router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const room = await Room.findByPk(req.params.id, {
-      include: [{ model: Student, as: 'occupants', attributes: ['name', 'email'] }]
-    });
+    const room = await Room.findById(req.params.id);
     if (!room) {
       res.status(404).json({ message: 'Room not found' });
       return;
     }
-    const json = room.toJSON();
-    json._id = json.id;
-    res.json(json);
+    res.json(room);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -43,7 +32,7 @@ router.get('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
 // POST /api/rooms/:id/book — Book a room (auth required)
 router.post('/:id/book', protect, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const room = await Room.findByPk(req.params.id, { include: [Student] });
+    const room = await Room.findById(req.params.id);
     if (!room) {
       res.status(404).json({ message: 'Room not found' });
       return;
@@ -54,21 +43,20 @@ router.post('/:id/book', protect, async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    if (req.user.roomId) {
-      // Remove from old room
-      const oldRoom = await Room.findByPk(req.user.roomId);
-      if (oldRoom) {
-        // In SQL we just update the Student's roomId. 
-        // We'll handle counts separately or use associations.
-      }
+    const student = await Student.findById(req.user.id);
+    if (!student) {
+        res.status(404).json({ message: 'Student not found' });
+        return;
     }
 
-    await req.user.update({ roomId: room.id });
+    student.roomId = room._id as any;
+    await student.save();
     
-    // Check occupancy
-    const occupantsCount = await Student.count({ where: { roomId: room.id } });
+    // Check occupancy (Mongoose doesn't have auto-increment association counts, usually we'd count)
+    const occupantsCount = await Student.countDocuments({ roomId: room._id });
     if (occupantsCount >= room.capacity) {
-      await room.update({ isAvailable: false });
+      room.isAvailable = false;
+      await room.save();
     }
 
     res.json({ message: 'Room booked successfully', room });
@@ -94,9 +82,7 @@ router.post('/', protect, async (req: AuthRequest, res: Response): Promise<void>
       floor,
       isAvailable: true
     });
-    const json = room.toJSON();
-    json._id = json.id;
-    res.status(201).json(json);
+    res.status(201).json(room);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -109,15 +95,12 @@ router.patch('/:id', protect, async (req: AuthRequest, res: Response): Promise<v
       res.status(403).json({ message: 'Forbidden' });
       return;
     }
-    const room = await Room.findByPk(req.params.id);
+    const room = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!room) {
       res.status(404).json({ message: 'Room not found' });
       return;
     }
-    await room.update(req.body);
-    const json = room.toJSON();
-    json._id = json.id;
-    res.json(json);
+    res.json(room);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -130,20 +113,21 @@ router.delete('/:id', protect, async (req: AuthRequest, res: Response): Promise<
       res.status(403).json({ message: 'Forbidden' });
       return;
     }
-    const room = await Room.findByPk(req.params.id);
+    
+    const room = await Room.findById(req.params.id);
     if (!room) {
       res.status(404).json({ message: 'Room not found' });
       return;
     }
     
     // Check if room has occupants
-    const occupants = await Student.count({ where: { roomId: room.id } });
+    const occupants = await Student.countDocuments({ roomId: room._id });
     if (occupants > 0) {
       res.status(400).json({ message: 'Cannot delete room with occupants' });
       return;
     }
 
-    await room.destroy();
+    await Room.findByIdAndDelete(req.params.id);
     res.json({ message: 'Room deleted' });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });

@@ -1,50 +1,21 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../config/db';
+import mongoose, { Schema, Document } from 'mongoose';
 
-class Notification extends Model {
-  public id!: number;
-  public studentId!: number;
-  public title!: string;
-  public message!: string;
-  public type!: 'info' | 'success' | 'warning' | 'reminder';
-  public read!: boolean;
-  public readonly createdAt!: Date;
+export interface INotification extends Document {
+  studentId: mongoose.Types.ObjectId;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'reminder';
+  read: boolean;
 }
 
-Notification.init({
-  id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  studentId: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'students',
-      key: 'id',
-    }
-  },
-  title: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  message: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  type: {
-    type: DataTypes.ENUM('info', 'success', 'warning', 'reminder'),
-    defaultValue: 'info',
-  },
-  read: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  }
+const NotificationSchema: Schema = new Schema({
+  studentId: { type: Schema.Types.ObjectId, ref: 'Student', required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  type: { type: String, enum: ['info', 'success', 'warning', 'reminder'], default: 'info' },
+  read: { type: Boolean, default: false }
 }, {
-  sequelize,
-  tableName: 'notifications',
-  updatedAt: false,
+  timestamps: { createdAt: true, updatedAt: false }
 });
 
-export default Notification;
+export default mongoose.model<INotification>('Notification', NotificationSchema);

@@ -1,4 +1,3 @@
-import sequelize from './config/db';
 import Student from './models/Student';
 import Room from './models/Room';
 import FoodMenu from './models/FoodMenu';
@@ -8,22 +7,21 @@ import Notification from './models/Notification';
 
 export const seedData = async (isStartup = false) => {
   try {
-    // Only verify connection if not already connected (though Sequelize handle this)
-    // await sequelize.authenticate(); 
-
-    // Sync and drop existing tables - ONLY if explicitly called, not on auto-seed
-    // On auto-seed we assume tables exist but are empty
     if (!isStartup) {
-      await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-      await sequelize.sync({ force: true });
-      await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-      console.log('🗑️  Database reset and synchronized');
+      // Clear existing data if not startup
+      await Student.deleteMany({});
+      await Room.deleteMany({});
+      await FoodMenu.deleteMany({});
+      await Bill.deleteMany({});
+      await Complaint.deleteMany({});
+      await Notification.deleteMany({});
+      console.log('🗑️  Database cleared');
     } else {
       console.log('🌱 Checking if database needs seeding...');
     }
 
     // Check if admin already exists
-    const adminExists = await Student.findOne({ where: { role: 'admin' } });
+    const adminExists = await Student.findOne({ role: 'admin' });
     if (adminExists && isStartup) {
       console.log('✅ Database already has data. Skipping seed.');
       return;
@@ -40,7 +38,7 @@ export const seedData = async (isStartup = false) => {
     console.log('👤 Admin created: admin@hostel.com / admin123');
 
     // Create demo student
-    const rahul = await Student.create({
+    await Student.create({
       name: 'Rahul Kumar',
       email: 'rahul@student.com',
       password: 'student123',
@@ -65,7 +63,7 @@ export const seedData = async (isStartup = false) => {
       { roomNumber: '304', type: 'Single', floor: 3, price: 8000, capacity: 1, amenities: ['WiFi', 'AC', 'Attached Bathroom', 'Study Table', 'Wardrobe'], description: 'Comfortable single room on top floor with great view' },
     ];
 
-    await Room.bulkCreate(roomsData as any);
+    await Room.insertMany(roomsData);
     console.log(`🏠 ${roomsData.length} rooms created`);
 
     // Create weekly food menu
@@ -79,15 +77,10 @@ export const seedData = async (isStartup = false) => {
       { day: 'Sunday', morning: 'Puri Bhaji, Chai, Fruit Salad', afternoon: 'Special Thali - Paneer, Dal, 3 Sabzi, Rice, Roti, Sweet, Papad', night: 'Pizza / Veg Manchurian, Fried Rice, Soup, Ice Cream' }
     ];
 
-    await FoodMenu.bulkCreate(foodMenuData);
+    await FoodMenu.insertMany(foodMenuData);
     console.log('🍽️  Weekly food menu created');
 
     console.log('\n✅ Seed complete!');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('Admin Login:   admin@hostel.com / admin123');
-    console.log('Student Login: rahul@student.com / student123');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
   } catch (err) {
     console.error('❌ Seed error:', err);
   }

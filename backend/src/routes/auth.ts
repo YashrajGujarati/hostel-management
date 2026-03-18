@@ -10,17 +10,17 @@ router.post('/signup', async (req: AuthRequest, res: Response): Promise<void> =>
   try {
     const { name, email, password, phone } = req.body;
 
-    const existingUser = await Student.findOne({ where: { email } });
+    const existingUser = await Student.findOne({ email });
     if (existingUser) {
       res.status(400).json({ message: 'Email already registered' });
       return;
     }
 
     const student = await Student.create({ name, email, password, phone });
-    const token = generateToken(student.id.toString(), student.role);
+    const token = generateToken(student._id.toString(), student.role);
 
     res.status(201).json({
-      _id: student.id.toString(),
+      _id: student._id.toString(),
       name: student.name,
       email: student.email,
       phone: student.phone,
@@ -40,7 +40,7 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
   try {
     const { email, password } = req.body;
 
-    const student = await Student.findOne({ where: { email } });
+    const student = await Student.findOne({ email });
     if (!student) {
       res.status(401).json({ message: 'Invalid email or password' });
       return;
@@ -52,10 +52,10 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
       return;
     }
 
-    const token = generateToken(student.id.toString(), student.role);
+    const token = generateToken(student._id.toString(), student.role);
 
     res.json({
-      _id: student.id.toString(),
+      _id: student._id.toString(),
       name: student.name,
       email: student.email,
       phone: student.phone,
@@ -73,18 +73,13 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
 // GET /api/auth/me
 router.get('/me', protect, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const student = await Student.findByPk(req.user.id, {
-      attributes: { exclude: ['password'] },
-      include: [Room]
-    });
+    const student = await Student.findById(req.user.id).select('-password').populate('roomId');
     if (!student) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
     
-    const user = student.toJSON();
-    user._id = user.id.toString();
-    res.json(user);
+    res.json(student);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -95,18 +90,16 @@ router.patch('/profile-photo', protect, async (req: AuthRequest, res: Response):
   try {
     const { profilePhoto } = req.body;
     
-    const student = await Student.findByPk(req.user.id);
+    const student = await Student.findById(req.user.id);
     if (!student) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
     
-    await student.update({ profilePhoto });
-    const updated = student.toJSON();
-    delete updated.password;
-    updated._id = updated.id.toString();
+    student.profilePhoto = profilePhoto;
+    await student.save();
 
-    res.json(updated);
+    res.json(student);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -116,7 +109,7 @@ router.patch('/profile-photo', protect, async (req: AuthRequest, res: Response):
 router.patch('/profile', protect, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, phone, password, theme } = req.body;
-    const student = await Student.findByPk(req.user.id);
+    const student = await Student.findById(req.user.id);
     if (!student) {
       res.status(404).json({ message: 'User not found' });
       return;
@@ -129,11 +122,7 @@ router.patch('/profile', protect, async (req: AuthRequest, res: Response): Promi
 
     await student.save();
     
-    const updated = student.toJSON();
-    delete updated.password;
-    updated._id = updated.id.toString();
-
-    res.json(updated);
+    res.json(student);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }

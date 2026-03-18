@@ -1,41 +1,19 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../config/db';
+import mongoose, { Schema, Document } from 'mongoose';
 
-class FoodMenu extends Model {
-  public id!: number;
-  public day!: string;
-  public morning!: string;
-  public afternoon!: string;
-  public night!: string;
+export interface IFoodMenu extends Document {
+  day: string;
+  morning: string;
+  afternoon: string;
+  night: string;
 }
 
-FoodMenu.init({
-  id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  day: {
-    type: DataTypes.STRING(20),
-    allowNull: false,
-    unique: true,
-  },
-  morning: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  afternoon: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  night: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  }
+const FoodMenuSchema: Schema = new Schema({
+  day: { type: String, required: true, unique: true },
+  morning: { type: String, required: true },
+  afternoon: { type: String, required: true },
+  night: { type: String, required: true }
 }, {
-  sequelize,
-  tableName: 'food_menus',
-  timestamps: false,
+  timestamps: false
 });
 
-export default FoodMenu;
+export default mongoose.model<IFoodMenu>('FoodMenu', FoodMenuSchema);

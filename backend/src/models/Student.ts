@@ -1,89 +1,47 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../config/db';
-import Room from './Room';
+import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-class Student extends Model {
-  public id!: number;
-  public name!: string;
-  public email!: string;
-  public password!: string;
-  public phone!: string;
-  public roomId!: number | null;
-  public bookingStatus!: 'None' | 'Pending' | 'Approved' | 'Rejected';
-  public profilePhoto!: string | null;
-  public theme!: 'dark' | 'light';
-  public role!: 'student' | 'admin';
-
-  public async comparePassword(candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.password);
-  }
-
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+export interface IStudent extends Document {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  roomId: mongoose.Types.ObjectId | null;
+  bookingStatus: 'None' | 'Pending' | 'Approved' | 'Rejected';
+  profilePhoto: string | null;
+  theme: 'dark' | 'light';
+  role: 'student' | 'admin';
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-Student.init({
-  id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  name: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-  },
-  email: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true,
-    }
-  },
-  password: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  phone: {
-    type: DataTypes.STRING(20),
-    allowNull: false,
-  },
-  roomId: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: true,
-    references: {
-      model: 'rooms',
-      key: 'id',
-    }
-  },
-  bookingStatus: {
-    type: DataTypes.ENUM('None', 'Pending', 'Approved', 'Rejected'),
-    defaultValue: 'None',
-  },
-  profilePhoto: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  theme: {
-    type: DataTypes.STRING(10),
-    defaultValue: 'dark',
-  },
-  role: {
-    type: DataTypes.ENUM('student', 'admin'),
-    defaultValue: 'student',
-  }
+const StudentSchema: Schema = new Schema({
+  name: { type: String, required: true, trim: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  password: { type: String, required: true },
+  phone: { type: String, required: true },
+  roomId: { type: Schema.Types.ObjectId, ref: 'Room', default: null },
+  bookingStatus: { type: String, enum: ['None', 'Pending', 'Approved', 'Rejected'], default: 'None' },
+  profilePhoto: { type: String, default: null },
+  theme: { type: String, enum: ['dark', 'light'], default: 'dark' },
+  role: { type: String, enum: ['student', 'admin'], default: 'student' }
 }, {
-  sequelize,
-  tableName: 'students',
-  hooks: {
-    beforeSave: async (student: Student) => {
-      if (student.changed('password')) {
-        const salt = await bcrypt.genSalt(10);
-        student.password = await bcrypt.hash(student.password, salt);
-      }
-    }
+  timestamps: true
+});
+
+// Hash password before saving
+StudentSchema.pre<IStudent>('save', async function() {
+  if (!this.isModified('password')) return;
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  } catch (err: any) {
+    throw err;
   }
 });
 
-export default Student;
+// Compare password method
+StudentSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+export default mongoose.model<IStudent>('Student', StudentSchema);

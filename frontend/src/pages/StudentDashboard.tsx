@@ -41,9 +41,9 @@ const StudentDashboard = () => {
   if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
   if (!user) return null;
 
-  const pendingComplaints = complaints.filter(c => c.status !== 'Resolved').length;
-  const totalPaid = bills.filter(b => b.paymentStatus === 'Paid').reduce((s, b) => s + b.totalAmount, 0);
-  const pendingBills = bills.filter(b => b.paymentStatus === 'Pending');
+  const pendingComplaints = (complaints || []).filter(c => c.status !== 'Resolved').length;
+  const totalPaid = (bills || []).filter(b => b.paymentStatus === 'Paid').reduce((s, b) => s + (b.totalAmount || 0), 0);
+  const pendingBills = (bills || []).filter(b => b.paymentStatus === 'Pending');
 
   return (
     <div className="dashboard">
@@ -141,7 +141,7 @@ const StudentDashboard = () => {
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{b.durationLabel}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    ₹{b.totalAmount.toLocaleString()} • {new Date(b.generatedAt).toLocaleDateString()}
+                    ₹{(b.totalAmount || 0).toLocaleString()} • {b.generatedAt ? new Date(b.generatedAt).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
                 {b.paymentStatus === 'Paid' && (
@@ -150,12 +150,17 @@ const StudentDashboard = () => {
                     style={{ fontSize: '0.7rem' }}
                     onClick={() => {
                       generateReceiptPDF({
-                        id: b._id.toString().slice(-8).toUpperCase(),
+                        id: b._id?.toString().slice(-8).toUpperCase() || 'N/A',
                         studentName: user.name,
                         roomNumber: room?.roomNumber || 'N/A',
-                        amount: b.totalAmount,
-                        date: b.generatedAt,
-                        duration: b.durationLabel,
+                        roomType: room?.type || 'Standard',
+                        amount: b.amount || 0,
+                        roomCharges: b.roomCharges || 0,
+                        foodCharges: b.foodCharges || 0,
+                        laundryCharges: b.laundryCharges || 0,
+                        gstAmount: b.gstAmount || 0,
+                        date: b.generatedAt || new Date(),
+                        duration: b.durationLabel || 'Monthly',
                         paymentMethod: b.paymentMethod || 'Online'
                       });
                     }}

@@ -1,8 +1,7 @@
 import { Router, Response } from 'express';
 import Complaint from '../models/Complaint';
 import Student from '../models/Student';
-import Room from '../models/Room';
-import { AuthRequest, protect, adminOnly, generateToken } from '../middleware/auth';
+import { AuthRequest, protect, adminOnly } from '../middleware/auth';
 
 const router = Router();
 
@@ -29,15 +28,12 @@ router.get('/', protect, async (req: AuthRequest, res: Response): Promise<void> 
   try {
     let complaints;
     if (req.user.role === 'admin') {
-      complaints = await Complaint.findAll({
-        order: [['createdAt', 'DESC']],
-        include: [{ model: Student, attributes: ['name', 'email', 'phone'] }]
-      });
+      complaints = await Complaint.find()
+        .sort({ createdAt: -1 })
+        .populate('studentId', 'name email phone');
     } else {
-      complaints = await Complaint.findAll({
-        where: { studentId: req.user.id },
-        order: [['createdAt', 'DESC']]
-      });
+      complaints = await Complaint.find({ studentId: req.user.id })
+        .sort({ createdAt: -1 });
     }
     res.json(complaints);
   } catch (error: any) {
@@ -50,16 +46,15 @@ router.patch('/:id/resolve', protect, adminOnly, async (req: AuthRequest, res: R
   try {
     const { status, adminResponse } = req.body;
 
-    const complaint = await Complaint.findByPk(req.params.id);
+    const complaint = await Complaint.findById(req.params.id);
     if (!complaint) {
       res.status(404).json({ message: 'Complaint not found' });
       return;
     }
 
-    await complaint.update({
-      status: status || 'Resolved',
-      comment: adminResponse
-    });
+    complaint.status = status || 'Resolved';
+    complaint.comment = adminResponse;
+    await complaint.save();
 
     res.json(complaint);
   } catch (error: any) {

@@ -42,9 +42,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const stored = localStorage.getItem('hostel_user');
     if (stored) {
-      const parsed = JSON.parse(stored);
-      setUser(parsed);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.token) {
+          setUser(parsed);
+          axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+        } else {
+          localStorage.removeItem('hostel_user');
+        }
+      } catch {
+        localStorage.removeItem('hostel_user');
+      }
     }
     setLoading(false);
   }, []);

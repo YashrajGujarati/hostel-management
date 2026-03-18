@@ -1,54 +1,23 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../config/db';
+import mongoose, { Schema, Document } from 'mongoose';
 
-class Complaint extends Model {
-  public id!: number;
-  public studentId!: number;
-  public title!: string;
-  public description!: string;
-  public category!: string;
-  public status!: 'Open' | 'Resolved' | 'Closed';
-  public comment!: string;
-  public readonly createdAt!: Date;
+export interface IComplaint extends Document {
+  studentId: mongoose.Types.ObjectId;
+  title: string;
+  description: string;
+  category: string;
+  status: 'Open' | 'Resolved' | 'Closed';
+  comment: string;
 }
 
-Complaint.init({
-  id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  studentId: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'students',
-      key: 'id',
-    }
-  },
-  title: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-  },
-  category: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-  },
-  status: {
-    type: DataTypes.ENUM('Open', 'Resolved', 'Closed'),
-    defaultValue: 'Open',
-  },
-  comment: {
-    type: DataTypes.TEXT,
-    defaultValue: '',
-  }
+const ComplaintSchema: Schema = new Schema({
+  studentId: { type: Schema.Types.ObjectId, ref: 'Student', required: true },
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  category: { type: String, required: true },
+  status: { type: String, enum: ['Open', 'Resolved', 'Closed'], default: 'Open' },
+  comment: { type: String, default: '' }
 }, {
-  sequelize,
-  tableName: 'complaints',
+  timestamps: true
 });
 
-export default Complaint;
+export default mongoose.model<IComplaint>('Complaint', ComplaintSchema);

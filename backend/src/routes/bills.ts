@@ -27,7 +27,7 @@ router.post('/generate', protect, async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    const room = await Room.findByPk(req.user.roomId);
+    const room = await Room.findById(req.user.roomId);
     if (!room) {
       res.status(404).json({ message: 'Room not found' });
       return;
@@ -43,7 +43,12 @@ router.post('/generate', protect, async (req: AuthRequest, res: Response): Promi
     const bill = await Bill.create({
       studentId: req.user.id,
       amount: totalAmount,
-      month: `${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`,
+      roomCharges,
+      foodCharges,
+      laundryCharges,
+      gstAmount,
+      duration,
+      durationLabel: DURATION_LABELS[duration] || `${duration} Months`,
       status: 'Unpaid',
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     });
@@ -59,7 +64,7 @@ router.post('/:id/pay', protect, async (req: AuthRequest, res: Response): Promis
   try {
     const { paymentMethod } = req.body;
 
-    const bill = await Bill.findByPk(req.params.id);
+    const bill = await Bill.findById(req.params.id);
     if (!bill) {
       res.status(404).json({ message: 'Bill not found' });
       return;
@@ -70,12 +75,24 @@ router.post('/:id/pay', protect, async (req: AuthRequest, res: Response): Promis
       return;
     }
 
-    await bill.update({
-      status: 'Paid',
-      paidDate: new Date()
-    });
+    bill.status = 'Paid';
+    bill.paidDate = new Date();
+    bill.paymentMethod = paymentMethod;
+    await bill.save();
 
-    res.json(bill);
+    // Populate student details for the receipt
+    const populatedBill = await Bill.findById(bill._id).populate('studentId', 'name');
+    
+    // Create a simplified receipt object
+    const receipt = {
+      ...populatedBill?.toObject(),
+      studentName: (populatedBill?.studentId as any)?.name || 'Student',
+      roomNumber: room?.roomNumber,
+      roomType: room?.type,
+      paidAt: bill.paidDate
+    };
+
+    res.json(receipt);
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -86,12 +103,9 @@ router.get('/', protect, async (req: AuthRequest, res: Response): Promise<void> 
   try {
     let bills;
     if (req.user.role === 'admin') {
-      bills = await Bill.findAll({ order: [['createdAt', 'DESC']] });
+      bills = await Bill.find().sort({ createdAt: -1 });
     } else {
-      bills = await Bill.findAll({ 
-        where: { studentId: req.user.id },
-        order: [['createdAt', 'DESC']]
-      });
+      bills = await Bill.find({ studentId: req.user.id }).sort({ createdAt: -1 });
     }
     res.json(bills);
   } catch (error: any) {

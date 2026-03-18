@@ -12,18 +12,7 @@ import Complaint from './models/Complaint';
 import Bill from './models/Bill';
 import Notification from './models/Notification';
 import { protect } from './middleware/auth';
-import sequelize from './config/db';
 import { seedData } from './seed';
-
-// Establish Associations
-Room.hasMany(Student, { foreignKey: 'roomId', as: 'occupants' });
-Student.belongsTo(Room, { foreignKey: 'roomId' });
-Student.hasMany(Complaint, { foreignKey: 'studentId' });
-Complaint.belongsTo(Student, { foreignKey: 'studentId' });
-Student.hasMany(Bill, { foreignKey: 'studentId' });
-Bill.belongsTo(Student, { foreignKey: 'studentId' });
- Student.hasMany(Notification, { foreignKey: 'studentId' });
-Notification.belongsTo(Student, { foreignKey: 'studentId' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -39,28 +28,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Database initialization helper
-const initDB = async () => {
-  try {
-    await connectDB();
-    if (process.env.NODE_ENV !== 'production' || process.env.SYNC_DB === 'true') {
-      await sequelize.sync({ alter: true });
-      console.log('✅ Database synchronized');
-      await seedData(true);
-    }
-  } catch (error) {
-    console.error('❌ Database Initialization Error:', error);
+// Database initialization
+connectDB().then(async () => {
+  if (process.env.SYNC_DB === 'true') {
+     await seedData(true);
   }
-};
-
-// Lazy initialization of database
-let isDBConnected = false;
-app.use(async (req, res, next) => {
-  if (!isDBConnected) {
-    await initDB();
-    isDBConnected = true;
-  }
-  next();
+}).catch(err => {
+  console.error('Database connection failed', err);
 });
 
 // Routes
@@ -74,13 +48,13 @@ app.use('/api/bills', billRoutes);
 app.post('/api/students/book-request', protect, async (req: any, res) => {
   try {
     const { roomType, roomId } = req.body;
-    const student = await Student.findByPk(req.user.id);
+    const student = await Student.findById(req.user.id);
     if (!student) return res.status(404).json({ message: 'Student not found' });
     
-    await student.update({ 
-      bookingStatus: 'Pending',
-      roomId: roomId // temporary or preferred room
-    });
+    student.bookingStatus = 'Pending';
+    student.roomId = roomId; // temporary or preferred room
+    await student.save();
+    
     res.json(student);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -93,10 +67,7 @@ app.post('/api/students/book-request', protect, async (req: any, res) => {
 app.get('/api/students', protect, async (req: any, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
-    const students = await Student.findAll({ 
-      where: { role: 'student' },
-      include: [Room]
-    });
+    const students = await Student.find({ role: 'student' }).populate('roomId');
     res.json(students);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -108,15 +79,15 @@ app.patch('/api/students/:id/booking', protect, async (req: any, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     const { status } = req.body;
-    const student = await Student.findByPk(req.params.id);
+    const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: 'Student not found' });
     
-    await student.update({ bookingStatus: status });
+    student.bookingStatus = status;
+    await student.save();
     
-    // Auto-notify student (In SQL we use the Notification model)
-    const { default: Notification } = await import('./models/Notification');
+    // Auto-notify student
     await Notification.create({
-      studentId: student.id,
+      studentId: student._id,
       title: 'Booking Update',
       message: `Your room booking status has been updated to: ${status}`,
       type: status === 'Approved' ? 'success' : 'warning'
@@ -134,9 +105,8 @@ app.post('/api/students/:id/notify', protect, async (req: any, res) => {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
     const { title, message, type } = req.body;
     
-    const { default: Notification } = await import('./models/Notification');
     const notif = await Notification.create({
-      studentId: Number(req.params.id),
+      studentId: req.params.id,
       title,
       message,
       type: type || 'info'

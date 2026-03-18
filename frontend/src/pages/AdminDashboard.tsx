@@ -20,9 +20,25 @@ const AdminDashboard = () => {
   const [resolveId, setResolveId] = useState<string | null>(null);
   const [showRoomModal, setShowRoomModal] = useState(false);
   const [editingRoom, setEditingRoom] = useState<any>(null);
+  const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>({});
   const [roomForm, setRoomForm] = useState({
     roomNumber: '', type: '2-Seater', capacity: 2, price: 5000, floor: 1, description: ''
   });
+
+  const toggleSensitive = (id: string) => {
+    setShowSensitive(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const maskEmail = (email: string) => {
+    if (!email) return '';
+    const [user, domain] = email.split('@');
+    return `${user.charAt(0)}${'*'.repeat(user.length - 2)}${user.slice(-1)}@${domain}`;
+  };
+
+  const maskPhone = (phone: string) => {
+    if (!phone) return '';
+    return `${phone.slice(0, 2)}${'*'.repeat(6)}${phone.slice(-2)}`;
+  };
 
   const updateBooking = async (studentId: string, status: string) => {
     try {
@@ -109,9 +125,9 @@ const AdminDashboard = () => {
   if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
   if (!user) return null;
 
-  const pendingComplaints = complaints.filter(c => c.status === 'Pending').length;
-  const availableRooms = rooms.filter(r => r.isAvailable).length;
-  const totalRevenue = bills.filter(b => b.paymentStatus === 'Paid').reduce((s, b) => s + b.totalAmount, 0);
+  const pendingComplaints = (complaints || []).filter(c => c.status === 'Pending' || c.status === 'Open').length;
+  const availableRooms = (rooms || []).filter(r => r.isAvailable).length;
+  const totalRevenue = (bills || []).filter(b => b.paymentStatus === 'Paid').reduce((s, b) => s + (b.totalAmount || b.amount || 0), 0);
 
   return (
     <div className="dashboard">
@@ -207,26 +223,20 @@ const AdminDashboard = () => {
       {/* COMPLAINTS TAB */}
       {tab === 'complaints' && (
         <div className="complaints-list">
-          {complaints.length === 0 && (
+          {(complaints || []).length === 0 && (
             <div className="empty-state"><div className="empty-state-icon">✅</div><h3>No complaints</h3></div>
           )}
-          {complaints.map(c => (
+          {(complaints || []).map(c => (
             <motion.div key={c._id} className="complaint-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="complaint-header">
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <span className={`complaint-category ${c.category}`}>{c.category}</span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>by {c.studentName}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>by {c.studentId?.name || 'Unknown'}</span>
                 </div>
                 <span className={`complaint-status ${c.status.replace(' ', '-')}`}>{c.status}</span>
               </div>
-              <div className="complaint-subject">{c.subject}</div>
+              <div className="complaint-subject">{c.title}</div>
               <div className="complaint-description">{c.description}</div>
-              {c.adminResponse && (
-                <div className="complaint-response">
-                  <div className="complaint-response-label">Your Response</div>
-                  <p>{c.adminResponse}</p>
-                </div>
-              )}
               <div className="complaint-meta">
                 {new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </div>
@@ -280,18 +290,44 @@ const AdminDashboard = () => {
             <div className="empty-state"><div className="empty-state-icon">💰</div><h3>No payments yet</h3></div>
           )}
           {bills.map(b => (
-            <div key={b._id} className="complaint-card">
-              <div className="complaint-header">
-                <span className={`complaint-status ${b.paymentStatus === 'Paid' ? 'Resolved' : 'Pending'}`}>{b.paymentStatus}</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {new Date(b.generatedAt).toLocaleDateString('en-IN')}
-                </span>
+            <div key={b._id} className="complaint-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div className="complaint-header">
+                  <span className={`complaint-status ${b.paymentStatus === 'Paid' ? 'Resolved' : 'Pending'}`}>{b.paymentStatus || 'Pending'}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    {new Date(b.createdAt).toLocaleDateString('en-IN')}
+                  </span>
+                </div>
+                <div className="complaint-subject">₹{(b.totalAmount || b.amount || 0).toLocaleString()} — {b.durationLabel || 'Monthly'}</div>
+                <div className="complaint-description">
+                  {b.studentId?.name || 'Unknown student'} • Room {b.studentId?.roomId?.roomNumber || 'N/A'}
+                </div>
               </div>
-              <div className="complaint-subject">₹{b.totalAmount.toLocaleString()} — {b.durationLabel}</div>
-              <div className="complaint-description">
-                {b.studentName} • Room {b.roomNumber} ({b.roomType})
-                {b.paymentMethod && ` • ${b.paymentMethod.replace('_', ' ').toUpperCase()}`}
-              </div>
+              {b.paymentStatus === 'Paid' && (
+                <button 
+                  className="btn btn-outline btn-sm"
+                  onClick={() => {
+                    import('../utils/receiptGenerator').then(m => {
+                      m.generateReceiptPDF({
+                        id: b._id,
+                        studentName: b.studentId?.name || 'N/A',
+                        roomNumber: b.studentId?.roomId?.roomNumber || 'N/A',
+                        roomType: b.studentId?.roomId?.type || 'Standard',
+                        amount: b.totalAmount || b.amount,
+                        roomCharges: b.roomCharges || 0,
+                        foodCharges: b.foodCharges || 0,
+                        laundryCharges: b.laundryCharges || 0,
+                        gstAmount: b.gstAmount || 0,
+                        date: b.paidAt || b.createdAt,
+                        duration: b.durationLabel || 'Monthly',
+                        paymentMethod: b.paymentMethod || 'Online'
+                      });
+                    });
+                  }}
+                >
+                  📥 Receipt
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -314,7 +350,9 @@ const AdminDashboard = () => {
                 <tr key={s._id} style={{ borderBottom: '1px solid var(--border-glass)' }}>
                   <td style={{ padding: '1rem' }}>
                     <div style={{ fontWeight: 700 }}>{s.name}</div>
-                    <div style={{ fontSize: '0.7rem', opacity: 0.6 }}>{s.phone}</div>
+                    <div style={{ fontSize: '0.7rem', opacity: 0.6, cursor: 'pointer' }} onClick={() => toggleSensitive(s._id)}>
+                      {showSensitive[s._id] ? s.phone : maskPhone(s.phone)} 👁️
+                    </div>
                   </td>
                   <td style={{ padding: '1rem' }}>{s.roomId?.roomNumber || 'Any Available'}</td>
                   <td style={{ padding: '1rem' }}>
@@ -352,7 +390,9 @@ const AdminDashboard = () => {
               {students.map(s => (
                 <tr key={s._id} style={{ borderBottom: '1px solid var(--border-glass)' }}>
                   <td style={{ padding: '1rem' }}>{s.name}</td>
-                  <td style={{ padding: '1rem', opacity: 0.7 }}>{s.email}</td>
+                  <td style={{ padding: '1rem', opacity: 0.7, cursor: 'pointer' }} onClick={() => toggleSensitive(s._id)}>
+                    {showSensitive[s._id] ? s.email : maskEmail(s.email)} 👁️
+                  </td>
                   <td style={{ padding: '1rem' }}>{s.roomId ? `Room ${s.roomId.roomNumber || '?'}` : 'Unassigned'}</td>
                   <td style={{ padding: '1rem' }}>
                     <span className={`complaint-status ${s.roomId ? 'Resolved' : 'Pending'}`}>

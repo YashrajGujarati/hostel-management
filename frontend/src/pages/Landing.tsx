@@ -39,10 +39,12 @@ const Landing = () => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const today = days[new Date().getDay()];
     axios.get(`${API}/food-menu`).then(r => {
-      const menu = r.data.find((m: any) => m.day === today);
-      if (menu) {
-        setTodayMenu(menu);
-        if (user) setTimeout(() => setShowMenuPopup(true), 2000);
+      if (Array.isArray(r.data)) {
+        const menu = r.data.find((m: any) => m.day === today);
+        if (menu) {
+          setTodayMenu(menu);
+          if (user) setTimeout(() => setShowMenuPopup(true), 2000);
+        }
       }
     }).catch(() => { });
   }, [user]);
@@ -106,8 +108,8 @@ const Landing = () => {
           </div>
           <div className="hero-stats">
             <div className="hero-stat">
-              <div className="hero-stat-number"><Counter value={rooms.length} suffix="+" /></div>
-              <div className="hero-stat-label">Rooms</div>
+              <div className="hero-stat-number"><Counter value={rooms?.length || 0} suffix="+" /></div>
+              <div className="hero-stat-label">Total Rooms</div>
             </div>
             <div className="hero-stat">
               <div className="hero-stat-number"><Counter value={availableRooms.length} /></div>
@@ -148,7 +150,7 @@ const Landing = () => {
           whileInView="show"
           viewport={{ once: true }}
         >
-          {rooms.slice(0, 6).map((room) => (
+          {(rooms || []).slice(0, 6).map((room) => (
             <motion.div
               key={room._id}
               className="room-card"
@@ -160,7 +162,7 @@ const Landing = () => {
             >
               <div style={{ height: '160px', position: 'relative' }}>
                 <img 
-                  src={room.type === 'Single' ? '/room-single.png' : (room.type === 'Double' ? '/room-double.png' : '/room-triple.png')} 
+                  src={room.type === '1-Seater' ? '/room-single.png' : (room.type === '2-Seater' ? '/room-double.png' : '/room-triple.png')} 
                   alt={room.type} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
@@ -170,13 +172,13 @@ const Landing = () => {
                 <span className="room-number">Room {room.roomNumber}</span>
               </div>
               <div className="room-card-body">
-                <div className="room-price">₹{room.price.toLocaleString()} <span>/month</span></div>
+                <div className="room-price">₹{room.price?.toLocaleString() || room.price} <span>/month</span></div>
                 <p className="room-description">{room.description}</p>
                 <div className="room-amenities">
-                  {room.amenities.slice(0, 3).map((a: string, i: number) => (
+                  {room.amenities?.slice(0, 3).map((a: string, i: number) => (
                     <span key={i} className="amenity-tag">{a}</span>
                   ))}
-                  {room.amenities.length > 3 && (
+                  {(room.amenities?.length || 0) > 3 && (
                     <span className="amenity-tag">+{room.amenities.length - 3} more</span>
                   )}
                 </div>
@@ -397,15 +399,15 @@ const Landing = () => {
           </div>
           <div className="food-meal">
             <div className="food-meal-time morning">☀️ Morning</div>
-            <div className="food-meal-items">{todayMenu.meals.morning}</div>
+            <div className="food-meal-items">{todayMenu.morning}</div>
           </div>
           <div className="food-meal">
             <div className="food-meal-time afternoon">🌤️ Afternoon</div>
-            <div className="food-meal-items">{todayMenu.meals.afternoon}</div>
+            <div className="food-meal-items">{todayMenu.afternoon}</div>
           </div>
           <div className="food-meal">
             <div className="food-meal-time night">🌙 Night</div>
-            <div className="food-meal-items">{todayMenu.meals.night}</div>
+            <div className="food-meal-items">{todayMenu.night}</div>
           </div>
         </motion.div>
       )}

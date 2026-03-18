@@ -65,7 +65,6 @@ function App() {
       <AuthProvider>
         <Navbar />
         <AppRoutes />
-        <BackToTop />
         <Toaster position="top-center" toastOptions={{ duration: 3000, style: { background: '#111827', color: '#fff', border: '1px solid var(--border-glass)' } }} />
       </AuthProvider>
     </Router>

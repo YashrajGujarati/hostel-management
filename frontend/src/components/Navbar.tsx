@@ -138,13 +138,13 @@ const Navbar = () => {
                 onClick={() => setNotifOpen(!notifOpen)}
               >
                 🔔
-                {(user.notifications?.filter((n: any) => !n.read).length || 0) > 0 && (
+                {(user.notifications?.filter((n: any) => !n.read)?.length || 0) > 0 && (
                   <span style={{ 
                     position: 'absolute', top: '-5px', right: '-5px', 
                     background: 'var(--accent-rose)', color: 'white', 
                     fontSize: '0.6rem', padding: '2px 5px', borderRadius: '10px', fontWeight: 800 
                   }}>
-                    {user.notifications?.filter((n: any) => !n.read).length}
+                    {user.notifications?.filter((n: any) => !n.read)?.length}
                   </span>
                 )}
               </div>

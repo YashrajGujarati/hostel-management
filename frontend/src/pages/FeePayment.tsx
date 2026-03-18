@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import Logo from '../components/Logo';
 
 import API from '../apiConfig';
+import { generateReceiptPDF } from '../utils/receiptGenerator';
 
 const durations = [
   { months: 1, label: '1 Month', desc: 'Monthly' },
@@ -38,6 +37,7 @@ const FeePayment = () => {
   const [error, setError] = useState('');
   const [bills, setBills] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -56,12 +56,20 @@ const FeePayment = () => {
     fetchData();
   }, [user]);
 
-  const generateBill = async () => {
-    if (!selectedDuration) return;
+  const generateBill = async (durationOverride?: number) => {
+    const durationToUse = durationOverride || selectedDuration;
+    if (!durationToUse) return;
     setError('');
     try {
-      const { data } = await axios.post(`${API}/bills/generate`, { duration: selectedDuration });
-      setBill(data);
+      const { data } = await axios.post(`${API}/bills/generate`, { duration: durationToUse });
+      const enrichedBill = {
+        ...data,
+        studentName: user?.name || 'Student',
+        roomNumber: room?.roomNumber || 'N/A',
+        roomType: room?.type || 'Standard',
+        totalAmount: data.amount || data.totalAmount || 0
+      };
+      setBill(enrichedBill);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to generate bill');
     }
@@ -84,16 +92,22 @@ const FeePayment = () => {
   };
 
   const downloadPDF = async () => {
-    const element = document.getElementById('receipt-card');
-    if (!element) return;
+    if (!receipt) return;
     try {
-      const canvas = await html2canvas(element, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Hostel_Fee_Receipt_${receipt._id}.pdf`);
+      await generateReceiptPDF({
+        id: receipt._id,
+        studentName: receipt.studentName,
+        roomNumber: receipt.roomNumber,
+        roomType: receipt.roomType,
+        amount: receipt.amount || receipt.totalAmount || 0,
+        roomCharges: receipt.roomCharges || 0,
+        foodCharges: receipt.foodCharges || 0,
+        laundryCharges: receipt.laundryCharges || 0,
+        gstAmount: receipt.gstAmount || 0,
+        date: receipt.paidAt || new Date(),
+        duration: receipt.durationLabel || 'Monthly',
+        paymentMethod: receipt.paymentMethod || 'Online'
+      });
     } catch (err) {
       console.error('Failed to generate PDF', err);
     }
@@ -189,17 +203,18 @@ const FeePayment = () => {
                 <div style={{ 
                   transform: 'rotate(-20deg)', 
                   border: '5px double #ef4444', 
-                  color: '#ef4444', 
+                    color: '#ef4444', 
                   padding: '5px 15px', 
                   borderRadius: '10px', 
                   fontSize: '1.8rem', 
-                  fontWeight: 900,
+                    fontWeight: 900,
                   opacity: 0.8,
-                  userSelect: 'none',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  background: 'rgba(239, 68, 68, 0.05)',
+                    userSelect: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(239, 68, 68, 0.05)',
                   boxShadow: '0 0 0 2px #ef4444 inset'
                 }}>
                   <span>PAID</span>
@@ -283,16 +298,16 @@ const FeePayment = () => {
                   <div
                     key={d.months}
                     className={`duration-option ${selectedDuration === d.months ? 'selected' : ''}`}
-                    onClick={() => setSelectedDuration(d.months)}
+                    onClick={() => {
+                      setSelectedDuration(d.months);
+                      generateBill(d.months);
+                    }}
                   >
                     <h4>{d.label}</h4>
                     <p>{d.desc}</p>
                   </div>
                 ))}
               </div>
-              <button className="btn btn-primary btn-lg" disabled={!selectedDuration} onClick={generateBill}>
-                Generate Bill →
-              </button>
             </motion.div>
           )}
 
@@ -334,6 +349,69 @@ const FeePayment = () => {
                   </div>
                 ))}
               </div>
+
+              {/* QR Code Popup */}
+              <AnimatePresence>
+                {showQR && (
+                  <motion.div 
+                    className="modal-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    style={{ 
+                      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+                      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+                      zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}
+                  >
+                    <motion.div 
+                      className="qr-modal"
+                      initial={{ scale: 0.9, y: 20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      style={{ 
+                        background: 'white', padding: '40px', borderRadius: '24px', 
+                        textAlign: 'center', color: '#111827', maxWidth: '400px', width: '90%' 
+                      }}
+                    >
+                      <div style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => setShowQR(false)}>✕</div>
+                      <h3 style={{ marginBottom: '10px', fontSize: '1.4rem', fontWeight: 800 }}>Scan to Pay</h3>
+                      <p style={{ color: '#6b7280', fontSize: '0.85rem', marginBottom: '25px' }}>
+                        Scan this QR code using your {paymentMethods.find(p => p.id === selectedPayment)?.name} app to pay ₹{(bill.totalAmount || 0).toLocaleString()}
+                      </p>
+                      
+                      <div style={{ 
+                        background: '#f9fafb', padding: '20px', borderRadius: '16px', 
+                        display: 'flex', justifyContent: 'center', marginBottom: '25px',
+                        border: '1px solid #f3f4f6'
+                      }}>
+                        {/* Mock QR Code */}
+                        <div style={{ width: '200px', height: '200px', background: 'white', padding: '10px', borderRadius: '12px', border: '2px solid #111827', position: 'relative' }}>
+                           <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=hostelsphere@upi&pn=HostelSphere&am=1.00" alt="QR Code" style={{ width: '100%', height: '100%' }} />
+                           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'white', padding: '5px', borderRadius: '4px' }}>
+                              <Logo size={30} />
+                           </div>
+                        </div>
+                      </div>
+
+                      <div style={{ fontSize: '0.9rem', color: '#111827', fontWeight: 700, marginBottom: '5px' }}>
+                        UPI ID: hostelsphere@upi
+                      </div>
+                      <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '25px' }}>Remaining time: 04:59</p>
+
+                      <button 
+                        className="btn btn-emerald btn-lg" 
+                        style={{ width: '100%', borderRadius: '12px' }}
+                        onClick={() => {
+                          setShowQR(false);
+                          payBill();
+                        }}
+                      >
+                        I have paid ₹{(bill.totalAmount || 0).toLocaleString()}
+                      </button>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                 <button className="btn btn-secondary" onClick={() => setBill(null)}>← Back</button>
