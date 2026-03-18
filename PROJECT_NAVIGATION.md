@@ -17,7 +17,7 @@ Use these accounts to explore different features of the application:
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
-| **Admin** | `admin@hostel.com` | `admin123` |
+| **Admin** | `admin@hostelsphere.com` | `admin123` |
 | **Student** | `banna@hostel.com` | `banna123` |
 
 ---

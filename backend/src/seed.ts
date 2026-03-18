@@ -30,12 +30,12 @@ export const seedData = async (isStartup = false) => {
     // Create admin
     await Student.create({
       name: 'Hostel Admin',
-      email: 'admin@hostel.com',
+      email: 'admin@hostelsphere.com',
       password: 'admin123',
       phone: '9999999999',
       role: 'admin'
     });
-    console.log('👤 Admin created: admin@hostel.com / admin123');
+    console.log('👤 Admin created: admin@hostelsphere.com / admin123');
 
     // Create demo student
     await Student.create({
