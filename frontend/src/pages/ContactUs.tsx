@@ -78,13 +78,13 @@ const ContactUs = () => {
                 <span style={{ fontSize: '1.2rem' }}>📍</span>
                 <div>
                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-                    123 Hostel Sphere Heights, Ahmedabad, 380001
+                    Munjka, Rajkot 360005
                   </p>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
                 <span style={{ fontSize: '1.2rem' }}>📞</span>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>+91 98765 43210</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>+91 63556 99781</p>
               </div>
               <div style={{ display: 'flex', gap: '1.5rem' }}>
                 <span style={{ fontSize: '1.2rem' }}>✉️</span>

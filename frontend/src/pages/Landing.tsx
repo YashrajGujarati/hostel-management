@@ -373,8 +373,8 @@ const Landing = () => {
               <div>
                 <h4 style={{ color: 'white', marginBottom: '1.5rem' }}>Contact</h4>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  Ahmedabad, Gujarat<br />
-                  +91 98765 43210<br />
+                  Munjka, Rajkot 360005<br />
+                  +91 63556 99781<br />
                   hello@hostelsphere.com
                 </p>
               </div>

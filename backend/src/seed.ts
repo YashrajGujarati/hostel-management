@@ -39,13 +39,13 @@ export const seedData = async (isStartup = false) => {
 
     // Create demo student
     await Student.create({
-      name: 'Rahul Kumar',
-      email: 'rahul@student.com',
-      password: 'student123',
+      name: 'Banna Student',
+      email: 'banna@hostel.com',
+      password: 'banna123',
       phone: '9876543210',
       role: 'student'
     });
-    console.log('👤 Demo student created: rahul@student.com / student123');
+    console.log('👤 Demo student created: banna@hostel.com / banna123');
 
     // Create rooms
     const roomsData = [
