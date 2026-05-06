@@ -11,7 +11,7 @@ const galleryItems = [
 
 const Gallery = () => {
   return (
-    <div className="section" style={{ paddingTop: '8rem', minHeight: '100vh' }}>
+    <div className="section pt-32 min-h-screen">
       <motion.div 
         className="section-header"
         initial={{ opacity: 0, y: 20 }}
@@ -22,17 +22,12 @@ const Gallery = () => {
         <p className="section-subtitle">Take a glimpse into your future home across our campus.</p>
       </motion.div>
 
-      <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', 
-          gap: '1.5rem',
-        }}>
+      <div className="container max-w-1200 mx-auto px-4">
+                <div className="grid gap-6 grid-cols-auto-350">
           {galleryItems.map((item, index) => (
             <motion.div
               key={index}
-              className="room-card"
-              style={{ padding: 0, overflow: 'hidden', cursor: 'zoom-in' }}
+              className="room-card p-0 overflow-hidden cursor-zoom-in"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               whileHover={{ scale: 1.02 }}
@@ -42,19 +37,13 @@ const Gallery = () => {
               <img 
                 src={item.src} 
                 alt={item.title} 
-                style={{ width: '100%', height: '250px', objectFit: 'cover' }} 
+                className="w-full h-250 object-cover"
               />
-              <div style={{ padding: '1.5rem' }}>
-                <span style={{ 
-                  fontSize: '0.7rem', 
-                  color: 'var(--accent-cyan)', 
-                  fontWeight: 700, 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.1em' 
-                }}>
+              <div className="p-6">
+                <span className="text-[0.7rem] text-cyan font-bold uppercase tracking-wider">
                   {item.category}
                 </span>
-                <h4 style={{ color: 'white', fontWeight: 700, marginTop: '0.5rem' }}>{item.title}</h4>
+                <h4 className="text-white font-bold mt-2">{item.title}</h4>
               </div>
             </motion.div>
           ))}

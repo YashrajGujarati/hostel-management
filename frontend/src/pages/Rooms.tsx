@@ -45,21 +45,20 @@ const Rooms = () => {
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
-  if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
+  if (loading) return <div className="loading min-h-screen pt-20"><div className="spinner"></div></div>;
 
   return (
-    <div className="section" style={{ paddingTop: '6rem', minHeight: '100vh' }} onMouseMove={handleMouseMove}>
+    <div className="section pt-24 min-h-screen" onMouseMove={handleMouseMove}>
       <motion.div
         className="section-header"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '1rem' }}>
+        <div className="flex flex-center gap-4 mb-4">
           <div className="section-badge">🏠 Accommodation</div>
           {user?.roomId && (
             <button 
-              className="section-badge" 
-              style={{ color: 'var(--accent-emerald)', cursor: 'pointer', border: '1px solid var(--accent-emerald)' }}
+              className="section-badge text-emerald cursor-pointer border border-emerald" 
               onClick={() => navigate('/pay-fees')}
             >
               💳 Pay My Fees
@@ -85,21 +84,21 @@ const Rooms = () => {
             onMouseEnter={() => setHoveredRoom(room)}
             onMouseLeave={() => setHoveredRoom(null)}
           >
-            <div className="room-card-image" style={{ height: '180px', overflow: 'hidden', position: 'relative' }}>
+            <div className="room-card-image h-45 overflow-hidden relative">
               <img 
                 src={room.type === '1-Seater' ? '/room-single.png' : (room.type === '2-Seater' ? '/room-double.png' : '/room-triple.png')} 
                 alt={room.type} 
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                className="w-full h-full object-cover" 
               />
-              <div className="room-type-badge" style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 1 }}>{room.type}</div>
+              <div className="room-type-badge absolute top-4 right-4 z-1">{room.type}</div>
             </div>
-            <div className="room-card-header" style={{ borderTop: 'none', paddingTop: '1.5rem' }}>
+                        <div className="room-card-header border-t-none">
               <span className="room-number">Room {room.roomNumber}</span>
             </div>
             <div className="room-card-body">
               <div className="room-price">₹{room.price?.toLocaleString() || room.price} <span>/month</span></div>
               <p className="room-description">{room.description}</p>
-              <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <div className="mb-2 text-xs text-muted">
                 Floor {room.floor} • Capacity: {room.capacity}
               </div>
               <div className="room-amenities">
@@ -107,25 +106,9 @@ const Rooms = () => {
                   <span key={i} className="amenity-tag">{a}</span>
                 )) || <span className="text-muted">No amenities listed</span>}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                <div className={`room-availability ${room.isAvailable ? 'available' : 'occupied'}`} style={{ 
-                  padding: '0.4rem 0.8rem', 
-                  borderRadius: '20px', 
-                  background: room.isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                  color: room.isAvailable ? '#10b981' : '#f43f5e',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span className="availability-dot" style={{ 
-                    width: '8px', 
-                    height: '8px', 
-                    borderRadius: '50%', 
-                    background: room.isAvailable ? '#10b981' : '#f43f5e',
-                    boxShadow: room.isAvailable ? '0 0 10px #10b981' : 'none'
-                  }}></span>
+              <div className="flex-between mt-4">
+                <div className={`room-availability ${room.isAvailable ? 'available' : 'occupied'}`}>
+                  <span className="availability-dot"></span>
                   {room.isAvailable ? 'AVAILABLE' : 'OCCUPIED'}
                 </div>
                 {room.isAvailable && (
@@ -151,7 +134,11 @@ const Rooms = () => {
       )}
 
       {hoveredRoom && (
-        <div className="room-hover-preview" style={{ left: mousePos.x, top: mousePos.y }}>
+        <motion.div 
+          className="room-hover-preview" 
+          animate={{ x: mousePos.x + 15, y: mousePos.y + 15 }}
+          transition={{ type: 'tween', ease: 'linear', duration: 0 }}
+        >
           <h4>Room {hoveredRoom.roomNumber} — {hoveredRoom.type}</h4>
           <div className="preview-row">
             <span className="preview-label">Floor</span>
@@ -167,7 +154,7 @@ const Rooms = () => {
           </div>
           <div className="preview-row">
             <span className="preview-label">Status</span>
-            <span className="preview-value" style={{ color: hoveredRoom.isAvailable ? '#10b981' : '#f43f5e' }}>
+            <span className={`preview-value ${hoveredRoom.isAvailable ? 'text-green' : 'text-red'}`}>
               {hoveredRoom.isAvailable ? '✅ Available' : '❌ Occupied'}
             </span>
           </div>
@@ -175,7 +162,7 @@ const Rooms = () => {
             <span className="preview-label">Amenities</span>
             <span className="preview-value">{hoveredRoom.amenities?.join(', ') || 'N/A'}</span>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

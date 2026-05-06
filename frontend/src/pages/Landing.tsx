@@ -153,22 +153,21 @@ const Landing = () => {
           {(rooms || []).slice(0, 6).map((room) => (
             <motion.div
               key={room._id}
-              className="room-card"
               variants={item}
               onMouseEnter={() => setHoveredRoom(room)}
               onMouseLeave={() => setHoveredRoom(null)}
               onClick={() => navigate('/book', { state: { roomType: room.type } })}
-              style={{ cursor: 'pointer', padding: 0, overflow: 'hidden' }}
+              className="room-card cursor-pointer p-0 overflow-hidden"
             >
-              <div style={{ height: '160px', position: 'relative' }}>
+              <div className="h-40 relative">
                 <img 
                   src={room.type === '1-Seater' ? '/room-single.png' : (room.type === '2-Seater' ? '/room-double.png' : '/room-triple.png')} 
                   alt={room.type} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  className="w-full h-full object-cover" 
                 />
-                <div className="room-type-badge" style={{ position: 'absolute', top: '10px', right: '10px' }}>{room.type}</div>
+                <div className="room-type-badge absolute top-2.5 right-2.5">{room.type}</div>
               </div>
-              <div className="room-card-header" style={{ border: 'none', padding: '1.2rem 1.5rem 0' }}>
+              <div className="room-card-header border-none pt-1.2rem px-1.5rem pb-0">
                 <span className="room-number">Room {room.roomNumber}</span>
               </div>
               <div className="room-card-body">
@@ -191,16 +190,17 @@ const Landing = () => {
           ))}
         </motion.div>
 
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+        <div className="text-center mt-8">
           <Link to="/rooms" className="btn btn-primary btn-lg">View All Rooms →</Link>
         </div>
 
         {/* Cursor hover preview */}
         {hoveredRoom && (
-          <div
+          <motion.div
             ref={previewRef}
             className="room-hover-preview"
-            style={{ left: mousePos.x, top: mousePos.y }}
+            animate={{ x: mousePos.x + 15, y: mousePos.y + 15 }}
+            transition={{ type: 'tween', ease: 'linear', duration: 0 }}
           >
             <h4>Room {hoveredRoom.roomNumber} — {hoveredRoom.type}</h4>
             <div className="preview-row">
@@ -217,7 +217,7 @@ const Landing = () => {
             </div>
             <div className="preview-row">
               <span className="preview-label">Status</span>
-              <span className="preview-value" style={{ color: hoveredRoom.isAvailable ? '#10b981' : '#f43f5e' }}>
+              <span className={`preview-value ${hoveredRoom.isAvailable ? 'text-green' : 'text-red'}`}>
                 {hoveredRoom.isAvailable ? '✅ Available' : '❌ Occupied'}
               </span>
             </div>
@@ -225,12 +225,12 @@ const Landing = () => {
               <span className="preview-label">Amenities</span>
               <span className="preview-value">{hoveredRoom.amenities.join(', ')}</span>
             </div>
-          </div>
+                    </motion.div>
         )}
       </section>
 
       {/* FACILITIES */}
-      <section className="section" style={{ background: 'rgba(255,255,255,0.02)' }}>
+      <section className="section bg-white-2">
         <motion.div
           className="section-header"
           initial={{ opacity: 0, y: 20 }}
@@ -252,24 +252,23 @@ const Landing = () => {
           {displayedFacilities.map((f, i) => (
             <motion.div 
               key={i} 
-              className="facility-card" 
               variants={item}
               onClick={() => handleFacilityClick(f.title)}
-              style={{ cursor: 'pointer' }}
+              className="facility-card cursor-pointer" 
               whileHover={{ scale: 1.05 }}
               title="Click to file a complaint about this facility"
             >
               <span className="facility-icon">{f.icon}</span>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
-              <div style={{ marginTop: '0.8rem', fontSize: '0.75rem', color: 'var(--accent-rose)', fontWeight: 600 }}>
+              <div className="mt-3 text-xs text-rose font-semibold">
                 🚩 Report Issue
               </div>
             </motion.div>
           ))}
         </motion.div>
 
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+        <div className="text-center mt-8">
           <button
             className="btn btn-secondary btn-lg"
             onClick={() => setShowAllFacilities(!showAllFacilities)}
@@ -323,7 +322,7 @@ const Landing = () => {
       </section>
 
       {/* GALLERY PREVIEW */}
-      <section className="section" style={{ background: 'rgba(255,255,255,0.02)' }}>
+      <section className="section bg-white-2">
         <motion.div
           className="section-header"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -335,44 +334,44 @@ const Landing = () => {
           <p className="section-subtitle">A glimpse into the comfortable and vibrant life at Hostel Sphere.</p>
         </motion.div>
 
-        <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-             <img src="/hostel-building.png" alt="Building" style={{ width: '100%', height: '250px', objectFit: 'cover', borderRadius: '16px' }} />
-             <img src="/hostel-room.png" alt="Room" style={{ width: '100%', height: '250px', objectFit: 'cover', borderRadius: '16px' }} />
-             <img src="/hostel-mess.png" alt="Mess" style={{ width: '100%', height: '250px', objectFit: 'cover', borderRadius: '16px' }} />
+        <div className="container max-w-1200 mx-auto">
+          <div className="grid grid-cols-3 gap-4">
+             <img src="/hostel-building.png" alt="Building" className="w-full h-250 object-cover rounded-2xl" />
+             <img src="/hostel-room.png" alt="Room" className="w-full h-250 object-cover rounded-2xl" />
+             <img src="/hostel-mess.png" alt="Mess" className="w-full h-250 object-cover rounded-2xl" />
           </div>
-          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <div className="text-center mt-8">
             <Link to="/gallery" className="btn btn-outline">Explore Full Gallery →</Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{ padding: '4rem 2rem', borderTop: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.2)' }}>
-         <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '3rem' }}>
-           <div style={{ maxWidth: '300px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+      <footer className="py-16 px-8 border-t-glass bg-black/20">
+         <div className="container max-w-1200 mx-auto flex-between flex-wrap gap-12">
+           <div className="max-w-300">
+              <div className="flex items-center gap-2.5 mb-6">
                 <Logo size={40} />
-                <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white' }}>Hostel Sphere</span>
+                <span className="text-2xl font-black text-white">Hostel Sphere</span>
               </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
+              <p className="text-muted text-sm leading-relaxed">
                 Providing premium, secure, and comfortable accommodation for students since 2024. Your perfect home away from home.
               </p>
            </div>
            
-           <div style={{ display: 'flex', gap: '4rem' }}>
+           <div className="flex gap-16">
               <div>
-                <h4 style={{ color: 'white', marginBottom: '1.5rem' }}>Quick Links</h4>
-                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                  <li><Link to="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>About Us</Link></li>
-                  <li><Link to="/rooms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Rooms</Link></li>
-                  <li><Link to="/facilities" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Facilities</Link></li>
-                  <li><Link to="/contact" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Contact Us</Link></li>
+                <h4 className="text-white mb-6">Quick Links</h4>
+                <ul className="list-none p-0 flex flex-col gap-3">
+                  <li><Link to="/about" className="text-muted no-underline">About Us</Link></li>
+                  <li><Link to="/rooms" className="text-muted no-underline">Rooms</Link></li>
+                  <li><Link to="/facilities" className="text-muted no-underline">Facilities</Link></li>
+                  <li><Link to="/contact" className="text-muted no-underline">Contact Us</Link></li>
                 </ul>
               </div>
               <div>
-                <h4 style={{ color: 'white', marginBottom: '1.5rem' }}>Contact</h4>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                <h4 className="text-white mb-6">Contact</h4>
+                <p className="text-muted text-sm">
                   Munjka, Rajkot 360005<br />
                   +91 63556 99781<br />
                   hello@hostelsphere.com
@@ -380,7 +379,7 @@ const Landing = () => {
               </div>
            </div>
          </div>
-         <div style={{ textAlign: 'center', marginTop: '4rem', color: 'var(--text-muted)', fontSize: '0.8rem', opacity: 0.6 }}>
+         <div className="text-center mt-16 text-muted text-xs opacity-60">
            <p>© 2026 Hostel Sphere Management System. All rights reserved.</p>
          </div>
       </footer>

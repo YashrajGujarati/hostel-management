@@ -55,12 +55,12 @@ const Complaints = () => {
     setTimeout(() => { setSuccess(''); setError(''); }, 5000);
   };
 
-  if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
+  if (loading) return <div className="loading min-h-screen pt-20"><div className="spinner"></div></div>;
 
   return (
     <div className="dashboard">
       <motion.div className="dashboard-header" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="flex-between flex-wrap gap-4">
           <div>
             <h1>Complaints 📝</h1>
             <p>Submit and track your complaints. Messages are sent directly to the hostel owner.</p>
@@ -78,17 +78,16 @@ const Complaints = () => {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="glass-card"
-          style={{ marginBottom: '2rem' }}
+          className="glass-card mb-8"
         >
-          <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Submit New Complaint</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--accent-amber)', marginBottom: '1rem' }}>
+          <h3 className="text-lg font-bold mb-4">Submit New Complaint</h3>
+          <p className="text-sm text-amber mb-4">
             ⚠️ Note: Complaints cannot be edited or deleted after submission.
           </p>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Category</label>
-              <select className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
+              <label htmlFor="category">Category</label>
+              <select id="category" title="Complaint Category" className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
                 <option value="Staff">Staff</option>
                 <option value="Medical">Medical</option>
                 <option value="Maintenance">Maintenance</option>
@@ -97,12 +96,12 @@ const Complaints = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Subject</label>
-              <input type="text" className="form-input" placeholder="Brief subject of complaint" value={subject} onChange={e => setSubject(e.target.value)} required />
+              <label htmlFor="subject">Subject</label>
+              <input id="subject" title="Subject" type="text" className="form-input" placeholder="Brief subject of complaint" value={subject} onChange={e => setSubject(e.target.value)} required />
             </div>
             <div className="form-group">
-              <label>Description</label>
-              <textarea className="form-textarea" placeholder="Describe the issue in detail..." value={description} onChange={e => setDescription(e.target.value)} required />
+              <label htmlFor="description">Description</label>
+              <textarea id="description" title="Description" className="form-textarea" placeholder="Describe the issue in detail..." value={description} onChange={e => setDescription(e.target.value)} required />
             </div>
             <button type="submit" className="btn btn-danger" disabled={submitting}>
               {submitting ? 'Submitting...' : '🚨 Submit Complaint'}
@@ -120,7 +119,7 @@ const Complaints = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="complaint-header">
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <div className="flex items-center gap-2">
                 <span className={`complaint-category ${c.category}`}>{c.category}</span>
               </div>
               <span className={`complaint-status ${c.status.replace(' ', '-')}`}>{c.status}</span>

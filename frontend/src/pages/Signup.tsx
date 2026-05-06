@@ -50,22 +50,22 @@ const Signup = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Full Name</label>
-            <input type="text" className="form-input" placeholder="Enter your full name" value={name} onChange={e => setName(e.target.value)} required />
+            <label htmlFor="signup-name">Full Name</label>
+            <input id="signup-name" type="text" className="form-input" placeholder="Enter your full name" value={name} onChange={e => setName(e.target.value)} required title="Full Name" />
           </div>
           <div className="form-group">
-            <label>Email Address</label>
-            <input type="email" className="form-input" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <label htmlFor="signup-email">Email Address</label>
+            <input id="signup-email" type="email" className="form-input" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required title="Email Address" />
           </div>
           <div className="form-group">
-            <label>Phone Number</label>
-            <input type="tel" className="form-input" placeholder="Enter your phone number" value={phone} onChange={e => setPhone(e.target.value)} required />
+            <label htmlFor="signup-phone">Phone Number</label>
+            <input id="signup-phone" type="tel" className="form-input" placeholder="Enter your phone number" value={phone} onChange={e => setPhone(e.target.value)} required title="Phone Number" />
           </div>
           <div className="form-group">
-            <label>Password</label>
-            <input type="password" className="form-input" placeholder="Min 6 characters" value={password} onChange={e => setPassword(e.target.value)} required />
+            <label htmlFor="signup-password">Password</label>
+            <input id="signup-password" type="password" className="form-input" placeholder="Min 6 characters" value={password} onChange={e => setPassword(e.target.value)} required title="Password" />
           </div>
-          <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={loading}>
+          <button type="submit" className="btn btn-primary btn-lg w-full" disabled={loading}>
             {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>

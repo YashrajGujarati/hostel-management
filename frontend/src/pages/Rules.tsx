@@ -41,7 +41,7 @@ const Rules = () => {
   ];
 
   return (
-    <div className="section" style={{ paddingTop: '8rem', minHeight: '100vh' }}>
+    <div className="section pt-32 min-h-screen">
       <motion.div 
         className="section-header"
         initial={{ opacity: 0, y: 20 }}
@@ -52,30 +52,23 @@ const Rules = () => {
         <p className="section-subtitle">Please adhere to these guidelines to ensure a harmonious environment.</p>
       </motion.div>
 
-      <div className="container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div className="container max-w-1000 mx-auto px-4">
+        <div className="grid gap-8 grid-cols-auto-400">
           {ruleCategories.map((cat, i) => (
             <motion.div 
               key={i}
-              className="stat-card"
-              style={{ textAlign: 'left', padding: '2.5rem' }}
+              className="stat-card text-left p-10"
               initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h3 style={{ color: 'var(--accent-cyan)', fontWeight: 800, marginBottom: '1.5rem', fontSize: '1.4rem' }}>
+              <h3 className="text-cyan font-extrabold mb-6 text-2xl">
                 {cat.title}
               </h3>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+              <ul className="list-none p-0">
                 {cat.rules.map((rule, ri) => (
-                  <li key={ri} style={{ 
-                    position: 'relative', 
-                    paddingLeft: '1.5rem', 
-                    marginBottom: '1rem', 
-                    color: 'var(--text-secondary)',
-                    lineHeight: '1.6'
-                  }}>
-                    <span style={{ position: 'absolute', left: 0, color: 'var(--accent-cyan)' }}>•</span>
+                  <li key={ri} className="relative pl-6 mb-4 text-secondary leading-relaxed">
+                    <span className="absolute left-0 text-cyan">•</span>
                     {rule}
                   </li>
                 ))}
@@ -84,16 +77,9 @@ const Rules = () => {
           ))}
         </div>
 
-        <div style={{ 
-          marginTop: '4rem', 
-          padding: '2.5rem', 
-          background: 'rgba(239, 68, 68, 0.05)', 
-          border: '1px solid rgba(239, 68, 68, 0.2)', 
-          borderRadius: '24px',
-          textAlign: 'center'
-        }}>
-          <h4 style={{ color: '#ef4444', fontWeight: 800, marginBottom: '0.5rem' }}>⚠️ Important Notice</h4>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+        <div className="mt-16 p-10 text-center bg-rose-5 border-rose-20 rounded-3xl">
+          <h4 className="text-red font-extrabold mb-2">⚠️ Important Notice</h4>
+          <p className="text-secondary text-sm">
             Violating these rules may result in strict disciplinary action or cancellation of the hostel admit card.
           </p>
         </div>

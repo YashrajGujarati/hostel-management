@@ -120,15 +120,15 @@ const FeePayment = () => {
     }
   };
 
-  if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
+  if (loading) return <div className="loading min-h-screen pt-20"><div className="spinner"></div></div>;
 
   if (!room) {
     return (
       <div className="payment-page">
-        <div className="empty-state" style={{ paddingTop: '4rem' }}>
+        <div className="empty-state pt-16">
           <div className="empty-state-icon">🏠</div>
           <h3>No Room Assigned</h3>
-          <p style={{ marginBottom: '1rem' }}>Please book a room first before paying fees.</p>
+          <p className="mb-4">Please book a room first before paying fees.</p>
           <button className="btn btn-primary" onClick={() => navigate('/rooms')}>Browse Rooms</button>
         </div>
       </div>
@@ -138,10 +138,10 @@ const FeePayment = () => {
   return (
     <div className="payment-page">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="section-header" style={{ textAlign: 'left' }}>
+        <div className="section-header text-left">
           <div className="section-badge">💳 Fee Payment</div>
           <h2 className="section-title">Pay Hostel Fees</h2>
-          <p className="section-subtitle" style={{ margin: 0 }}>
+          <p className="section-subtitle m-0">
             Room {room.roomNumber} ({room.type}) — ₹{room.price.toLocaleString()}/month
           </p>
         </div>
@@ -159,134 +159,98 @@ const FeePayment = () => {
             exit={{ opacity: 0 }}
           >
             <div className="receipt-check">✅</div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>Payment Successful!</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Your fee payment has been processed.</p>
+            <h2 className="text-2xl font-extrabold mb-2">Payment Successful!</h2>
+            <p className="text-secondary mb-6">Your fee payment has been processed.</p>
             
-            <div id="receipt-card" style={{ 
-              padding: '40px', 
-              background: '#ffffff', 
-              borderRadius: '16px', 
-              color: '#1f2937',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-              maxWidth: '500px',
-              margin: '0 auto',
-              position: 'relative',
-              overflow: 'hidden',
-              fontFamily: 'Inter, sans-serif'
-            }}>
+            <div id="receipt-card" className="receipt-card">
               {/* Premium Background Accent */}
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '8px', background: 'linear-gradient(90deg, #0ea5e9, #10b981)' }}></div>
+              <div className="receipt-accent"></div>
               
               {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px', position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div className="receipt-header">
+                <div className="flex items-center gap-4">
                   <Logo size={55} />
                   <div>
-                    <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.03em', textTransform: 'uppercase' }}>Hostel Sphere</h2>
-                    <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: 0, fontWeight: 500 }}>A Home Away from Home</p>
+                    <h2 className="text-2xl font-black text-[#111827] m-0 tracking-tight uppercase">Hostel Sphere</h2>
+                    <p className="text-xs text-[#6b7280] m-0 font-medium">A Home Away from Home</p>
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 600, margin: 0 }}>INVOICE #</p>
-                  <p style={{ fontSize: '0.85rem', color: '#111827', fontWeight: 700, margin: 0 }}>{receipt._id.substring(0, 8).toUpperCase()}</p>
+                <div className="text-right">
+                  <p className="text-[0.75rem] text-[#9ca3af] font-semibold m-0">INVOICE #</p>
+                  <p className="text-[0.85rem] text-[#111827] font-bold m-0">{receipt._id.substring(0, 8).toUpperCase()}</p>
                 </div>
               </div>
 
-              <div style={{ borderBottom: '2px solid #f3f4f6', marginBottom: '25px' }}></div>
+              <div className="receipt-divider"></div>
 
               {/* Details and Stamp Container */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px', position: 'relative' }}>
+              <div className="receipt-section">
                 <div>
-                  <p style={{ fontSize: '0.75rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, marginBottom: '8px' }}>Billing To</p>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#111827', margin: 0 }}>{receipt.studentName}</h3>
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
-                    <span style={{ background: '#f3f4f6', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>Room {receipt.roomNumber}</span>
-                    <span style={{ background: '#f3f4f6', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>{receipt.roomType}</span>
+                  <p className="receipt-label-tiny">Billing To</p>
+                  <h3 className="receipt-student-name">{receipt.studentName}</h3>
+                  <div className="flex gap-2.5 mt-1.5">
+                    <span className="receipt-tag">Room {receipt.roomNumber}</span>
+                    <span className="receipt-tag">{receipt.roomType}</span>
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '10px' }}>Date of Issue: <strong>{new Date(receipt.paidAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</strong></p>
+                  <p className="text-sm text-[#6b7280] mt-2.5">Date of Issue: <strong>{new Date(receipt.paidAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}</strong></p>
                 </div>
 
                 {/* Professional PAID Rubber Stamp */}
-                <div style={{ 
-                  transform: 'rotate(-20deg)', 
-                  border: '5px double #ef4444', 
-                    color: '#ef4444', 
-                  padding: '5px 15px', 
-                  borderRadius: '10px', 
-                  fontSize: '1.8rem', 
-                    fontWeight: 900,
-                  opacity: 0.8,
-                    userSelect: 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(239, 68, 68, 0.05)',
-                  boxShadow: '0 0 0 2px #ef4444 inset'
-                }}>
+                <div className="receipt-stamp">
                   <span>PAID</span>
-                  <span style={{ fontSize: '0.7rem' }}>{new Date(receipt.paidAt).toLocaleDateString('en-IN')}</span>
+                  <span className="text-[0.7rem]">{new Date(receipt.paidAt).toLocaleDateString('en-IN')}</span>
                 </div>
               </div>
 
               {/* Items Table */}
-              <div style={{ marginBottom: '30px', background: '#fcfcfc', borderRadius: '12px', border: '1px solid #f1f1f1', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: '#f9fafb', fontSize: '0.75rem', color: '#9ca3af', fontWeight: 700, textTransform: 'uppercase' }}>
+              <div className="receipt-table-container">
+                <div className="receipt-table-header">
                   <span>Fee Description</span>
                   <span>Subtotal</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid #f3f4f6', fontSize: '0.95rem' }}>
-                  <span style={{ color: '#4b5563', fontWeight: 500 }}>Room Accommodation <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>({receipt.durationLabel})</span></span>
-                  <span style={{ fontWeight: 700, color: '#111827' }}>₹{receipt.roomCharges?.toLocaleString()}</span>
+                <div className="receipt-table-row">
+                  <span className="text-[#4b5563] font-medium">Room Accommodation <span className="text-[0.75rem] text-[#9ca3af]">({receipt.durationLabel})</span></span>
+                  <span className="font-bold text-[#111827]">₹{receipt.roomCharges?.toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid #f3f4f6', fontSize: '0.95rem' }}>
-                  <span style={{ color: '#4b5563', fontWeight: 500 }}>Dining & Meal Services</span>
-                  <span style={{ fontWeight: 700, color: '#111827' }}>₹{receipt.foodCharges?.toLocaleString()}</span>
+                <div className="receipt-table-row">
+                  <span className="text-[#4b5563] font-medium">Dining & Meal Services</span>
+                  <span className="font-bold text-[#111827]">₹{receipt.foodCharges?.toLocaleString()}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderBottom: '1px solid #f3f4f6', fontSize: '0.95rem' }}>
-                  <span style={{ color: '#4b5563', fontWeight: 500 }}>Laundry & Facility Maintenance</span>
-                  <span style={{ fontWeight: 700, color: '#111827' }}>₹{receipt.laundryCharges?.toLocaleString()}</span>
+                <div className="receipt-table-row">
+                  <span className="text-[#4b5563] font-medium">Laundry & Facility Maintenance</span>
+                  <span className="font-bold text-[#111827]">₹{receipt.laundryCharges?.toLocaleString()}</span>
                 </div>
                 {receipt.gstAmount !== undefined && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: '#f9fafb', fontSize: '0.9rem' }}>
-                    <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>Applicable GST (18%)</span>
-                    <span style={{ fontWeight: 600, color: '#6b7280' }}>₹{receipt.gstAmount?.toLocaleString()}</span>
+                  <div className="flex-between p-3.5 bg-[#f9fafb] text-sm">
+                    <span className="text-[#6b7280] text-xs">Applicable GST (18%)</span>
+                    <span className="font-semibold text-[#6b7280]">₹{receipt.gstAmount?.toLocaleString()}</span>
                   </div>
                 )}
               </div>
 
               {/* Total Card */}
-              <div style={{ 
-                background: 'linear-gradient(135deg, #111827, #1f2937)', 
-                borderRadius: '12px', 
-                padding: '25px', 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                color: 'white',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-              }}>
+              <div className="receipt-total-box">
                 <div>
-                  <p style={{ fontSize: '0.8rem', color: '#9ca3af', margin: 0, fontWeight: 500 }}>Net Payable Amount</p>
-                  <p style={{ fontSize: '0.75rem', color: '#6b7280', margin: '4px 0 0 0' }}>via {receipt.paymentMethod?.replace('_', ' ').toUpperCase()}</p>
+                  <p className="text-sm text-[#9ca3af] m-0 font-medium">Net Payable Amount</p>
+                  <p className="text-[0.75rem] text-[#6b7280] mt-1 m-0">via {receipt.paymentMethod?.replace('_', ' ').toUpperCase()}</p>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ffffff' }}>₹{receipt.totalAmount?.toLocaleString()}</div>
-                  <p style={{ fontSize: '0.65rem', color: '#10b981', margin: '4px 0 0 0', fontWeight: 700 }}>● TRANSACTION SUCCESSFUL</p>
+                <div className="text-right">
+                  <div className="text-3xl font-black text-white">₹{receipt.totalAmount?.toLocaleString()}</div>
+                  <p className="text-[0.65rem] text-[#10b981] mt-1 m-0 font-bold">● TRANSACTION SUCCESSFUL</p>
                 </div>
               </div>
 
               {/* Footer Details */}
-              <div style={{ marginTop: '30px', textAlign: 'center', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
-                <p style={{ fontSize: '0.7rem', color: '#9ca3af', margin: 0 }}>Reference ID: {receipt._id}</p>
-                <div style={{ marginTop: '15px' }}>
-                  <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111827', margin: 0 }}>Hostel Sphere Management System</p>
-                  <p style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '4px' }}>This is a computer-generated receipt and doesn't require a physical signature.</p>
+              <div className="receipt-footer">
+                <p className="text-[0.7rem] text-[#9ca3af] m-0">Reference ID: {receipt._id}</p>
+                <div className="mt-4">
+                  <p className="text-[0.85rem] font-bold text-[#111827] m-0">Hostel Sphere Management System</p>
+                  <p className="text-[0.7rem] text-[#9ca3af] mt-1">This is a computer-generated receipt and doesn't require a physical signature.</p>
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'center' }}>
+            <div className="flex gap-4 mt-6 flex-center">
               <button className="btn btn-secondary" onClick={() => setReceipt(null)}>Pay Another</button>
               <button className="btn btn-primary" onClick={downloadPDF}>📄 Download PDF</button>
             </div>
@@ -299,7 +263,7 @@ const FeePayment = () => {
           {/* Duration Selection */}
           {!bill && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Select Duration</h3>
+              <h3 className="mb-4 text-lg font-bold">Select Duration</h3>
               <div className="duration-options">
                 {durations.map(d => (
                   <div
@@ -321,13 +285,13 @@ const FeePayment = () => {
           {/* Bill Preview */}
           {bill && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="bill-preview" style={{ padding: '30px', borderRadius: '16px' }}>
-                <div className="bill-header" style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '20px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+              <div className="bill-preview p-8 rounded-2xl">
+                <div className="bill-header border-b-glass pb-5 mb-5">
+                  <div className="flex items-center gap-3 mb-2">
                     <Logo size={35} />
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Hostel Sphere — Fee Invoice</h2>
+                    <h2 className="text-xl font-extrabold">Hostel Sphere — Fee Invoice</h2>
                   </div>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  <p className="text-muted text-sm">
                     Auto-generated bill for {bill.studentName}
                   </p>
                 </div>
@@ -337,13 +301,13 @@ const FeePayment = () => {
                 <div className="bill-row"><span className="label">Food Charges</span><span className="value">₹{bill.foodCharges.toLocaleString()}</span></div>
                 <div className="bill-row"><span className="label">Laundry Charges</span><span className="value">₹{bill.laundryCharges.toLocaleString()}</span></div>
                 {bill.gstAmount !== undefined && <div className="bill-row"><span className="label">GST (18%)</span><span className="value">₹{bill.gstAmount.toLocaleString()}</span></div>}
-                <div className="bill-row total" style={{ marginTop: '15px', paddingTop: '15px', borderTop: '2px solid var(--border-glass)' }}>
+                <div className="bill-row total mt-4 pt-4 border-t-2 border-glass">
                   <span className="label">Total Amount</span>
-                  <span className="value" style={{ fontSize: '1.4rem', color: 'var(--accent-cyan)' }}>₹{bill.totalAmount.toLocaleString()}</span>
+                  <span className="value text-2xl text-cyan">₹{bill.totalAmount.toLocaleString()}</span>
                 </div>
               </div>
 
-              <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Choose Payment Method</h3>
+              <h3 className="mb-4 text-lg font-bold">Choose Payment Method</h3>
               <div className="payment-methods">
                 {paymentMethods.map(pm => (
                   <div
@@ -361,53 +325,39 @@ const FeePayment = () => {
               <AnimatePresence>
                 {showQR && (
                   <motion.div 
-                    className="modal-overlay"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    style={{ 
-                      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-                      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
-                      zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
+                    className="modal-overlay fixed inset-0 bg-black-85 backdrop-blur-sm z-3000 flex-center"
                   >
                     <motion.div 
-                      className="qr-modal"
                       initial={{ scale: 0.9, y: 20 }}
                       animate={{ scale: 1, y: 0 }}
-                      style={{ 
-                        background: 'white', padding: '40px', borderRadius: '24px', 
-                        textAlign: 'center', color: '#111827', maxWidth: '400px', width: '90%' 
-                      }}
+                      className="qr-modal modal-qr"
                     >
-                      <div style={{ position: 'absolute', top: '20px', right: '20px', cursor: 'pointer', fontSize: '1.5rem' }} onClick={() => setShowQR(false)}>✕</div>
-                      <h3 style={{ marginBottom: '10px', fontSize: '1.4rem', fontWeight: 800 }}>Scan to Pay</h3>
-                      <p style={{ color: '#6b7280', fontSize: '0.85rem', marginBottom: '25px' }}>
+                      <div className="close-modal" onClick={() => setShowQR(false)}>✕</div>
+                      <h3 className="mb-2.5 text-1.4rem font-extrabold">Scan to Pay</h3>
+                      <p className="text-[#6b7280] text-[0.85rem] mb-6">
                         Scan this QR code using your {paymentMethods.find(p => p.id === selectedPayment)?.name} app to pay ₹{(bill.totalAmount || 0).toLocaleString()}
                       </p>
                       
-                      <div style={{ 
-                        background: '#f9fafb', padding: '20px', borderRadius: '16px', 
-                        display: 'flex', justifyContent: 'center', marginBottom: '25px',
-                        border: '1px solid #f3f4f6'
-                      }}>
+                      <div className="qr-container">
                         {/* Mock QR Code */}
-                        <div style={{ width: '200px', height: '200px', background: 'white', padding: '10px', borderRadius: '12px', border: '2px solid #111827', position: 'relative' }}>
-                           <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=hostelsphere@upi&pn=HostelSphere&am=1.00" alt="QR Code" style={{ width: '100%', height: '100%' }} />
-                           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'white', padding: '5px', borderRadius: '4px' }}>
+                        <div className="qr-box">
+                           <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=hostelsphere@upi&pn=HostelSphere&am=1.00" alt="QR Code" className="w-full h-full" />
+                           <div className="qr-logo">
                               <Logo size={30} />
                            </div>
                         </div>
                       </div>
 
-                      <div style={{ fontSize: '0.9rem', color: '#111827', fontWeight: 700, marginBottom: '5px' }}>
+                      <div className="text-sm text-[#111827] font-bold mb-1.5">
                         UPI ID: hostelsphere@upi
                       </div>
-                      <p style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '25px' }}>Remaining time: 04:59</p>
+                      <p className="text-[0.75rem] text-[#9ca3af] mb-6">Remaining time: 04:59</p>
 
                       <button 
-                        className="btn btn-emerald btn-lg" 
-                        style={{ width: '100%', borderRadius: '12px' }}
+                        className="btn btn-emerald btn-lg w-full rounded-xl"
                         onClick={() => {
                           setShowQR(false);
                           payBill();
@@ -420,26 +370,24 @@ const FeePayment = () => {
                 )}
               </AnimatePresence>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+              <div className="flex gap-4 mt-8">
                 <button className="btn btn-secondary" onClick={() => setBill(null)}>← Back</button>
                 {(selectedPayment === 'google_pay' || selectedPayment === 'paytm') && (
                   <button
-                    className="btn btn-outline btn-sm"
-                    style={{ fontWeight: 700 }}
+                    className="btn btn-outline btn-sm font-bold"
                     onClick={() => setShowQR(true)}
                   >
                     📱 Scan QR Code
                   </button>
                 )}
                 <button
-                  className="btn btn-emerald btn-lg"
-                  style={{ flex: 1, fontWeight: 800, letterSpacing: '0.02em', boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)' }}
+                  className="btn btn-emerald btn-lg flex-1 font-extrabold tracking-wide shadow-emerald"
                   disabled={!selectedPayment || paying}
                   onClick={payBill}
                 >
                   {paying ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                      <div className="spinner" style={{ width: '20px', height: '20px', borderTopColor: 'white' }}></div>
+                    <div className="flex items-center justify-center gap-2.5">
+                      <div className="spinner w-5 h-5 border-t-white"></div>
                       Processing...
                     </div>
                   ) : (
@@ -457,16 +405,12 @@ const FeePayment = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                style={{ 
-                  position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-                  background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
-                  zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}
+                className="fixed inset-0 bg-black-80 backdrop-blur-md z-2000 flex-center"
               >
-                <div style={{ textAlign: 'center' }}>
-                  <div className="spinner" style={{ width: '80px', height: '80px', margin: '0 auto 2rem' }}></div>
-                  <h2 style={{ color: 'white', fontWeight: 800, marginBottom: '0.5rem' }}>Securing Transaction</h2>
-                  <p style={{ color: 'var(--text-muted)' }}>Confirming payment with your provider...</p>
+                <div className="text-center">
+                  <div className="spinner w-80 h-80 mx-auto mb-8"></div>
+                  <h2 className="text-white font-extrabold mb-2">Securing Transaction</h2>
+                  <p className="text-muted">Confirming payment with your provider...</p>
                 </div>
               </motion.div>
             )}
@@ -476,9 +420,9 @@ const FeePayment = () => {
 
       {/* Payment History */}
       {bills.length > 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} style={{ marginTop: '3rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Payment History</h3>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-12">
+          <div className="flex flex-between items-center mb-4">
+            <h3 className="text-1.1rem font-bold">Payment History</h3>
             <button className="btn btn-secondary btn-sm" onClick={() => setShowHistory(!showHistory)}>
               {showHistory ? 'Hide' : 'Show'}
             </button>
@@ -491,18 +435,17 @@ const FeePayment = () => {
                     <span className={`complaint-status ${b.status === 'Paid' ? 'Resolved' : 'Pending'}`}>
                       {b.status}
                     </span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    <span className="text-xs text-muted">
                       {new Date(b.createdAt || Date.now()).toLocaleDateString('en-IN')}
                     </span>
                   </div>
                   <div className="complaint-subject">₹{(b.amount || b.totalAmount || 0).toLocaleString()} — {b.durationLabel}</div>
-                  <div className="complaint-description" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="complaint-description flex flex-between items-center">
                     <span>Room {room?.roomNumber || 'N/A'} ({room?.type || 'Standard'}) • {b.paymentMethod ? b.paymentMethod.replace('_', ' ').toUpperCase() : 'Not paid'}</span>
                     
                     {b.status === 'Paid' && (
                       <button 
-                        className="btn btn-secondary btn-sm"
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: 600 }}
+                        className="btn btn-secondary btn-sm px-3 py-1.5 text-xs font-semibold"
                         onClick={() => {
                           import('../utils/receiptGenerator').then(m => {
                             m.generateReceiptPDF({

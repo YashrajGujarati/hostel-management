@@ -26,7 +26,7 @@ const Facilities = () => {
   };
 
   return (
-    <div className="section" style={{ paddingTop: '8rem', minHeight: '100vh' }}>
+    <div className="section pt-32 min-h-screen">
       <motion.div 
         className="section-header"
         initial={{ opacity: 0, scale: 0.9 }}
@@ -37,36 +37,21 @@ const Facilities = () => {
         <p className="section-subtitle">We go beyond housing to provide a complete lifestyle for students.</p>
       </motion.div>
 
-      <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' }}>
-        <div className="facilities-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+      <div className="container max-w-1200 mx-auto px-8">
+                <div className="facilities-grid grid gap-8 grid-cols-auto-320">
           {facilities.map((f, i) => (
             <motion.div 
               key={i} 
-              className="facility-card"
-              style={{ 
-                padding: '2.5rem', 
-                textAlign: 'left', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'flex-start' 
-              }}
+              className="facility-card p-10 text-left flex flex-col items-start"
               whileHover={{ y: -10, borderColor: 'var(--accent-cyan)' }}
               onClick={() => handleFacilityClick(f.title)}
             >
-              <div 
-                style={{ 
-                  fontSize: '3rem', 
-                  marginBottom: '1.5rem', 
-                  padding: '1rem', 
-                  background: 'rgba(255,255,255,0.05)', 
-                  borderRadius: '20px' 
-                }}
-              >
+              <div className="text-5xl mb-6 p-4 bg-glass rounded-2xl">
                 {f.icon}
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', marginBottom: '1rem' }}>{f.title}</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem' }}>{f.desc}</p>
-              <div style={{ marginTop: 'auto', color: 'var(--accent-rose)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}>
+              <h3 className="text-2xl font-extrabold text-white mb-4">{f.title}</h3>
+              <p className="text-secondary leading-relaxed mb-6">{f.desc}</p>
+              <div className="mt-auto text-rose font-bold text-xs cursor-pointer">
                 🚩 Report Issue or Query
               </div>
             </motion.div>

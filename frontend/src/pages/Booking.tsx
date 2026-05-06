@@ -70,10 +70,10 @@ const Booking = () => {
     }
   };
 
-  if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
+  if (loading) return <div className="loading loading-screen"><div className="spinner"></div></div>;
 
   return (
-    <div className="section" style={{ paddingTop: '8rem', minHeight: '100vh' }}>
+    <div className="section page-section">
       <motion.div 
         className="section-header"
         initial={{ opacity: 0, scale: 0.95 }}
@@ -84,86 +84,95 @@ const Booking = () => {
         <p className="section-subtitle">Reserve your spot at Hostel Sphere in just a few clicks.</p>
       </motion.div>
 
-      <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 1rem' }}>
+      <div className="container booking-container">
         <motion.div 
-          className="auth-card" 
-          style={{ maxWidth: '100%', padding: '3rem' }}
+          className="auth-card booking-card" 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <form onSubmit={handleSubmit} className="booking-form">
             
-            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-              <label>Full Name</label>
+            <div className="form-group full-width">
+              <label htmlFor="booking-name">Full Name</label>
               <input 
+                id="booking-name"
                 type="text" 
                 className="form-input" 
                 value={formData.name} 
                 onChange={e => setFormData({...formData, name: e.target.value})} 
                 required 
+                placeholder="Enter your full name"
+                title="Full Name"
               />
             </div>
 
             <div className="form-group">
-              <label>Mobile Number</label>
+              <label htmlFor="booking-phone">Mobile Number</label>
               <input 
+                id="booking-phone"
                 type="tel" 
                 className="form-input" 
                 value={formData.phone} 
                 onChange={e => setFormData({...formData, phone: e.target.value})} 
                 required 
+                placeholder="Enter mobile number"
+                title="Mobile Number"
               />
             </div>
 
             <div className="form-group">
-              <label>Email Address</label>
+              <label htmlFor="booking-email">Email Address</label>
               <input 
+                id="booking-email"
                 type="email" 
                 className="form-input" 
                 value={formData.email} 
                 onChange={e => setFormData({...formData, email: e.target.value})} 
                 required 
+                placeholder="Enter email address"
+                title="Email Address"
               />
             </div>
 
             <div className="form-group">
-              <label>Select Room Type</label>
+              <label htmlFor="booking-roomType">Select Room Type</label>
               <select 
-                className="form-input" 
-                style={{ appearance: 'none', background: 'var(--bg-glass)', color: 'white' }}
+                id="booking-roomType"
+                className="form-input form-select" 
                 value={formData.roomType}
                 onChange={e => setFormData({...formData, roomType: e.target.value})}
+                title="Select Room Type"
               >
-                <option value="Single" style={{ background: '#111827' }}>Single Room</option>
-                <option value="Double" style={{ background: '#111827' }}>Double Sharing</option>
-                <option value="Triple" style={{ background: '#111827' }}>Triple Sharing</option>
+                <option value="Single" className="select-option">Single Room</option>
+                <option value="Double" className="select-option">Double Sharing</option>
+                <option value="Triple" className="select-option">Triple Sharing</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label>Check-in Date</label>
+              <label htmlFor="booking-date">Check-in Date</label>
               <input 
+                id="booking-date"
                 type="date" 
-                className="form-input" 
-                style={{ colorScheme: 'dark' }}
+                className="form-input date-input" 
                 value={formData.checkInDate} 
                 onChange={e => setFormData({...formData, checkInDate: e.target.value})} 
                 required 
+                title="Check-in Date"
               />
             </div>
 
-            <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
+            <div className="submit-wrapper">
               <button 
                 type="submit" 
-                className="btn btn-primary btn-lg" 
-                style={{ width: '100%' }} 
+                className="btn btn-primary btn-lg w-100" 
                 disabled={submitting}
               >
                 {submitting ? 'Processing Booking...' : 'Submit Booking Request →'}
               </button>
             </div>
 
-            <p style={{ gridColumn: '1 / -1', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
+            <p className="booking-note">
               Note: Actual room number will be allocated based on availability at the time of check-in.
             </p>
 

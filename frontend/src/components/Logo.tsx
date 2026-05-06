@@ -1,6 +1,5 @@
-import React from 'react';
 
-const Logo = ({ size = 40, className = "", style = {} }: { size?: number, className?: string, style?: React.CSSProperties }) => {
+const Logo = ({ size = 40, className = "" }: { size?: number, className?: string }) => {
   return (
     <svg 
       width={size} 
@@ -9,7 +8,6 @@ const Logo = ({ size = 40, className = "", style = {} }: { size?: number, classN
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      style={style}
     >
       {/* Outer Sphere/Circle with Gradient */}
       <defs>

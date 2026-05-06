@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
     "target": "ESNext",
     "useDefineForClassFields": true,

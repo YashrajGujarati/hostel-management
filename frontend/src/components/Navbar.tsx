@@ -113,7 +113,7 @@ const Navbar = () => {
           <div className="navbar-auth-mobile">
             {user ? (
               <>
-                <div style={{ color: 'var(--text-secondary)', textAlign: 'center', fontSize: '0.9rem' }}>
+                <div className="mobile-welcome">
                   👋 {user.name}
                 </div>
                 <button className="btn btn-secondary" onClick={handleLogout}>Logout</button>
@@ -133,17 +133,12 @@ const Navbar = () => {
           <>
             <div className="profile-menu-container" ref={notifRef}>
               <div 
-                className="profile-avatar-btn" 
-                style={{ fontSize: '1rem', background: 'transparent', border: '1px solid var(--border-glass)' }}
+                className="profile-avatar-btn notif-btn" 
                 onClick={() => setNotifOpen(!notifOpen)}
               >
                 🔔
                 {(user.notifications?.filter((n: any) => !n.read)?.length || 0) > 0 && (
-                  <span style={{ 
-                    position: 'absolute', top: '-5px', right: '-5px', 
-                    background: 'var(--accent-rose)', color: 'white', 
-                    fontSize: '0.6rem', padding: '2px 5px', borderRadius: '10px', fontWeight: 800 
-                  }}>
+                  <span className="notif-badge">
                     {user.notifications?.filter((n: any) => !n.read)?.length}
                   </span>
                 )}
@@ -152,27 +147,22 @@ const Navbar = () => {
               <AnimatePresence>
                 {notifOpen && (
                   <motion.div
-                    className="profile-dropdown"
+                    className="profile-dropdown notif-dropdown"
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    style={{ width: '280px', right: 0 }}
                   >
-                    <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-glass)', fontWeight: 800, fontSize: '0.9rem' }}>
+                    <div className="dropdown-header-title">
                       Notifications
                     </div>
-                    <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                    <div className="notif-list">
                       {(!user.notifications || user.notifications.length === 0) ? (
-                        <div style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>No new updates</div>
+                        <div className="empty-state">No new updates</div>
                       ) : (
                         user.notifications.slice().reverse().map((n: any) => (
-                          <div key={n.id} style={{ 
-                            padding: '1.25rem', 
-                            borderBottom: '1px solid var(--border-glass)',
-                            background: n.read ? 'transparent' : 'rgba(255,255,255,0.03)'
-                          }}>
-                            <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'white' }}>{n.title}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.4' }}>{n.message}</div>
+                          <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
+                            <div className="notif-title">{n.title}</div>
+                            <div className="notif-desc">{n.message}</div>
                           </div>
                         ))
                       )}
@@ -194,30 +184,31 @@ const Navbar = () => {
                 )}
               </div>
 
+              <label htmlFor="profile-photo-upload" className="hidden-file-input">Upload Profile Photo</label>
               <input
+                id="profile-photo-upload"
                 type="file"
                 ref={fileInputRef}
-                style={{ display: 'none' }}
+                className="hidden-file-input"
                 accept="image/*"
                 onChange={handleFileChange}
+                title="Upload Profile Photo"
               />
 
               <AnimatePresence>
                 {profileOpen && (
                   <motion.div
-                    className="profile-dropdown"
+                    className="profile-dropdown profile-menu"
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    style={{ width: '300px' }}
                   >
-                    <div className="profile-dropdown-header" style={{ padding: '1.5rem' }}>
+                    <div className="profile-dropdown-header p-1-5">
                       <div 
-                        className={`profile-avatar-large ${uploading ? 'uploading' : ''}`}
+                        className={`profile-avatar-large avatar-xl ${uploading ? 'uploading' : ''}`}
                         onClick={handlePhotoClick}
                         title="Click to change photo"
-                        style={{ width: '70px', height: '70px', fontSize: '1.8rem' }}
                       >
                         {user.profilePhoto ? (
                           <img src={user.profilePhoto} alt="Profile" />
@@ -227,15 +218,15 @@ const Navbar = () => {
                         <div className="avatar-overlay">📷</div>
                       </div>
                       <div className="profile-dropdown-info">
-                        <h4 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{user.name}</h4>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--accent-blue)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>
+                        <h4 className="profile-name">{user.name}</h4>
+                        <div className="profile-id">
                            ID: {user._id?.toString().slice(-8).toUpperCase()}
                         </div>
-                        <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>{user.email}</p>
+                        <p className="profile-email">{user.email}</p>
                       </div>
                     </div>
 
-                    <div className="profile-dropdown-body" style={{ padding: '0 1rem 1rem' }}>
+                    <div className="profile-dropdown-body dropdown-body-padded">
                       <Link to="/profile" className="profile-dropdown-item" onClick={() => setProfileOpen(false)}>
                         👤 My Profile
                       </Link>
@@ -250,7 +241,7 @@ const Navbar = () => {
                         </Link>
                       )}
 
-                      <hr style={{ border: 'none', borderTop: '1px solid var(--border-glass)', margin: '0.5rem 0' }} />
+                      <hr className="dropdown-divider" />
                       
                       <button className="profile-dropdown-item text-danger" onClick={handleLogout}>
                         🚪 Logout
@@ -262,7 +253,7 @@ const Navbar = () => {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div className="auth-buttons">
             <Link to="/login" className="btn btn-secondary btn-sm">Login</Link>
             <Link to="/signup" className="btn btn-primary btn-sm">Sign Up</Link>
           </div>
@@ -270,9 +261,9 @@ const Navbar = () => {
       </div>
 
       <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
-        <span style={menuOpen ? { transform: 'rotate(45deg) translate(5px, 5px)' } : {}} />
-        <span style={menuOpen ? { opacity: 0 } : {}} />
-        <span style={menuOpen ? { transform: 'rotate(-45deg) translate(5px, -5px)' } : {}} />
+        <span className={menuOpen ? 'hamburger-line open-1' : 'hamburger-line'} />
+        <span className={menuOpen ? 'hamburger-line open-2' : 'hamburger-line'} />
+        <span className={menuOpen ? 'hamburger-line open-3' : 'hamburger-line'} />
       </div>
     </motion.nav>
   );

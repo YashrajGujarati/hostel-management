@@ -123,7 +123,7 @@ const AdminDashboard = () => {
     } catch { }
   };
 
-  if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
+  if (loading) return <div className="loading min-h-screen pt-20"><div className="spinner"></div></div>;
   if (!user) return null;
 
   const pendingComplaints = (complaints || []).filter(c => c.status === 'Pending' || c.status === 'Open').length;
@@ -140,7 +140,7 @@ const AdminDashboard = () => {
       <motion.div className="dashboard-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
         <div className="stat-card">
           <div className="stat-card-icon">🚨</div>
-          <div className="stat-card-value" style={{ color: pendingComplaints > 0 ? 'var(--accent-amber)' : 'var(--accent-emerald)' }}>
+          <div className="stat-card-value text-amber">
             {pendingComplaints}
           </div>
           <div className="stat-card-label">Pending Complaints</div>
@@ -165,16 +165,16 @@ const AdminDashboard = () => {
       {/* ANALYTICS SECTION */}
       <motion.div 
         className="glass-card" 
-        style={{ marginTop: '24px', padding: '2.5rem' }}
+        className="glass-card mt-6 p-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-           <h3 style={{ color: 'white', fontWeight: 800, fontSize: '1.3rem' }}>📈 Performance Insights</h3>
-           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Real-time Data Sync</div>
+        <div className="flex flex-between items-center mb-8">
+           <h3 className="text-white font-extrabold text-1.3rem">📈 Performance Insights</h3>
+           <div className="text-xs text-muted">Real-time Data Sync</div>
         </div>
         
-        <div style={{ width: '100%', height: '300px' }}>
+        <div className="w-full h-300">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={[
               { name: 'Jan', revenue: 45000, bookings: 40 },
@@ -203,7 +203,7 @@ const AdminDashboard = () => {
         </div>
       </motion.div>
 
-      <div className="tabs" style={{ marginBottom: '2.5rem', background: 'var(--bg-glass)', padding: '0.4rem', borderRadius: 'var(--radius-xl)' }}>
+      <div className="tabs mb-10 bg-glass p-1-5 rounded-xl">
         <button className={`tab ${tab === 'complaints' ? 'active' : ''}`} onClick={() => setTab('complaints')}>
           🚨 Complaints
         </button>
@@ -230,9 +230,9 @@ const AdminDashboard = () => {
           {(complaints || []).map(c => (
             <motion.div key={c._id} className="complaint-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="complaint-header">
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="flex-wrap items-center gap-2 flex">
                   <span className={`complaint-category ${c.category}`}>{c.category}</span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>by {c.studentId?.name || 'Unknown'}</span>
+                  <span className="text-sm text-muted">by {c.studentId?.name || 'Unknown'}</span>
                 </div>
                 <span className={`complaint-status ${c.status.replace(' ', '-')}`}>{c.status}</span>
               </div>
@@ -247,8 +247,8 @@ const AdminDashboard = () => {
                   {resolveId === c._id ? (
                     <div className="admin-resolve-form">
                       <div className="form-group">
-                        <label>Status</label>
-                        <select className="form-select" value={resolveStatus} onChange={e => setResolveStatus(e.target.value)}>
+                        <label htmlFor="resolve-status">Status</label>
+                        <select id="resolve-status" title="Resolve Status" className="form-select" value={resolveStatus} onChange={e => setResolveStatus(e.target.value)}>
                           <option value="In Progress">In Progress</option>
                           <option value="Resolved">Resolved</option>
                         </select>
@@ -263,15 +263,14 @@ const AdminDashboard = () => {
                           required
                         />
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="flex gap-2">
                         <button className="btn btn-emerald btn-sm" onClick={() => resolveComplaint(c._id)}>Submit</button>
                         <button className="btn btn-secondary btn-sm" onClick={() => setResolveId(null)}>Cancel</button>
                       </div>
                     </div>
                   ) : (
                     <button
-                      className="btn btn-outline btn-sm"
-                      style={{ marginTop: '0.75rem' }}
+                      className="btn btn-outline btn-sm mt-4"
                       onClick={() => { setResolveId(c._id); setResolveResponse(''); setResolveStatus('Resolved'); }}
                     >
                       Respond & Resolve
@@ -291,11 +290,11 @@ const AdminDashboard = () => {
             <div className="empty-state"><div className="empty-state-icon">💰</div><h3>No payments yet</h3></div>
           )}
           {bills.map(b => (
-            <div key={b._id} className="complaint-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={b._id} className="complaint-card flex-between">
               <div>
                 <div className="complaint-header">
                   <span className={`complaint-status ${b.status === 'Paid' ? 'Resolved' : 'Pending'}`}>{b.status || 'Unpaid'}</span>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  <span className="text-sm text-muted">
                     {new Date(b.createdAt).toLocaleDateString('en-IN')}
                   </span>
                 </div>
@@ -337,32 +336,32 @@ const AdminDashboard = () => {
       {/* BOOKINGS TAB */}
       {tab === 'bookings' && (
         <div className="complaints-list">
-          <table style={{ width: '100%', color: 'white', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <table className="w-full mt-4 text-white border-collapse">
             <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                <th style={{ padding: '1rem' }}>Student</th>
-                <th style={{ padding: '1rem' }}>Room Preference</th>
-                <th style={{ padding: '1rem' }}>Current Status</th>
-                <th style={{ padding: '1rem' }}>Action</th>
+              <tr className="bg-glass text-left">
+                <th className="p-4">Student</th>
+                <th className="p-4">Room Preference</th>
+                <th className="p-4">Current Status</th>
+                <th className="p-4">Action</th>
               </tr>
             </thead>
             <tbody>
               {students.filter(s => s.bookingStatus !== 'None').map(s => (
-                <tr key={s._id} style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                  <td style={{ padding: '1rem' }}>
-                    <div style={{ fontWeight: 700 }}>{s.name}</div>
-                    <div style={{ fontSize: '0.7rem', opacity: 0.6, cursor: 'pointer' }} onClick={() => toggleSensitive(s._id)}>
+                <tr key={s._id} className="border-b-glass">
+                  <td className="p-4">
+                    <div className="font-bold">{s.name}</div>
+                    <div className="text-xs opacity-60 cursor-pointer" onClick={() => toggleSensitive(s._id)}>
                       {showSensitive[s._id] ? s.phone : maskPhone(s.phone)} 👁️
                     </div>
                   </td>
-                  <td style={{ padding: '1rem' }}>{s.roomId?.roomNumber || 'Any Available'}</td>
-                  <td style={{ padding: '1rem' }}>
+                  <td className="p-4">{s.roomId?.roomNumber || 'Any Available'}</td>
+                  <td className="p-4">
                     <span className={`complaint-status ${s.bookingStatus}`}>
                       {s.bookingStatus}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <td className="p-4">
+                    <div className="flex gap-2">
                       <button className="btn btn-emerald btn-sm" onClick={() => updateBooking(s._id, 'Approved')}>Approve</button>
                       <button className="btn btn-rose btn-sm" onClick={() => updateBooking(s._id, 'Rejected')}>Reject</button>
                     </div>
@@ -370,7 +369,7 @@ const AdminDashboard = () => {
                 </tr>
               ))}
               {students.filter(s => s.bookingStatus !== 'None').length === 0 && (
-                <tr><td colSpan={4} style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>No booking requests</td></tr>
+                <tr><td colSpan={4} className="p-8 text-center opacity-50">No booking requests</td></tr>
               )}
             </tbody>
           </table>
@@ -378,24 +377,24 @@ const AdminDashboard = () => {
       )}
       {tab === 'students' && (
         <div className="complaints-list">
-          <table style={{ width: '100%', color: 'white', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <table className="w-full mt-4 text-white border-collapse">
             <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
-                <th style={{ padding: '1rem' }}>Name</th>
-                <th style={{ padding: '1rem' }}>Email</th>
-                <th style={{ padding: '1rem' }}>Room</th>
-                <th style={{ padding: '1rem' }}>Status</th>
+              <tr className="bg-glass text-left">
+                <th className="p-4">Name</th>
+                <th className="p-4">Email</th>
+                <th className="p-4">Room</th>
+                <th className="p-4">Status</th>
               </tr>
             </thead>
             <tbody>
               {students.map(s => (
-                <tr key={s._id} style={{ borderBottom: '1px solid var(--border-glass)' }}>
-                  <td style={{ padding: '1rem' }}>{s.name}</td>
-                  <td style={{ padding: '1rem', opacity: 0.7, cursor: 'pointer' }} onClick={() => toggleSensitive(s._id)}>
+                <tr key={s._id} className="border-b-glass">
+                  <td className="p-4">{s.name}</td>
+                  <td className="p-4 opacity-70 cursor-pointer" onClick={() => toggleSensitive(s._id)}>
                     {showSensitive[s._id] ? s.email : maskEmail(s.email)} 👁️
                   </td>
-                  <td style={{ padding: '1rem' }}>{s.roomId ? `Room ${s.roomId.roomNumber || '?'}` : 'Unassigned'}</td>
-                  <td style={{ padding: '1rem' }}>
+                  <td className="p-4">{s.roomId ? `Room ${s.roomId.roomNumber || '?'}` : 'Unassigned'}</td>
+                  <td className="p-4">
                     <span className={`complaint-status ${s.roomId ? 'Resolved' : 'Pending'}`}>
                       {s.roomId ? 'Active' : 'Inactive'}
                     </span>
@@ -409,8 +408,8 @@ const AdminDashboard = () => {
 
       {/* ROOMS TAB (Visual Map) */}
       {tab === 'rooms' && (
-        <div style={{ padding: '1rem' }}>
-           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
+        <div className="p-4">
+           <div className="flex justify-end mb-8">
               <button 
                 className="btn btn-primary" 
                 onClick={() => {
@@ -422,33 +421,25 @@ const AdminDashboard = () => {
                 + Add New Room
               </button>
            </div>
-           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem' }}>
+                       <div className="grid gap-4 grid-cols-auto-140">
               {rooms.map(room => (
                 <div 
                   key={room._id} 
-                  style={{ 
-                    padding: '1.2rem', 
-                    background: room.isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-                    border: `1px solid ${room.isAvailable ? '#10b981' : '#f43f5e'}`,
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    position: 'relative',
-                    transition: '0.3s'
-                  }}
+                  className={`p-6 text-center relative transition-all rounded-2xl ${room.isAvailable ? 'bg-green-10 border border-green' : 'bg-red-10 border border-red'}`}
                 >
-                   <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '5px' }}>
+                   <div className="absolute top-2 right-2 flex gap-1">
                     <button 
                       onClick={() => openEditRoom(room)}
-                      style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: '0.8rem', padding: '5px' }}
+                      className="bg-transparent border-none text-blue cursor-pointer text-xs p-1"
                     >✏️</button>
                     <button 
                       onClick={() => deleteRoom(room._id)}
-                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', padding: '5px' }}
+                      className="bg-transparent border-none text-red cursor-pointer text-xs p-1"
                     >🗑️</button>
                   </div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{room.roomNumber}</div>
-                  <div style={{ fontSize: '0.65rem', opacity: 0.7, marginBottom: '8px' }}>{room.type}</div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: room.isAvailable ? '#10b981' : '#f43f5e' }}>
+                  <div className="text-lg font-extrabold">{room.roomNumber}</div>
+                  <div className="text-[0.65rem] opacity-70 mb-2">{room.type}</div>
+                  <div className={`text-xs font-bold ${room.isAvailable ? 'text-green' : 'text-red'}`}>
                     {room.isAvailable ? 'FREE' : 'FULL'}
                   </div>
                 </div>
@@ -460,33 +451,32 @@ const AdminDashboard = () => {
       {/* ADD/EDIT ROOM MODAL */}
       <AnimatePresence>
         {showRoomModal && (
-          <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="modal-overlay flex-center p-4 bg-black-80 backdrop-blur-md z-50 fixed inset-0">
             <motion.div 
-              className="glass-card" 
+              className="glass-card w-full max-w-500 border border-blue" 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              style={{ width: '100%', maxWidth: '500px', border: '1px solid var(--accent-blue)' }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 style={{ fontSize: '1.5rem' }}>{editingRoom ? 'Edit Room 🏠' : 'Add New Room 🏠'}</h2>
-                <button onClick={() => setShowRoomModal(false)} style={{ background: 'none', color: 'white', fontSize: '1.5rem' }}>×</button>
+              <div className="flex-between mb-6">
+                <h2 className="text-2xl">{editingRoom ? 'Edit Room 🏠' : 'Add New Room 🏠'}</h2>
+                <button onClick={() => setShowRoomModal(false)} className="bg-transparent border-none text-white text-2xl cursor-pointer">×</button>
               </div>
-              <form onSubmit={handleRoomSubmit} style={{ display: 'grid', gap: '1rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <form onSubmit={handleRoomSubmit} className="grid gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="form-group">
-                    <label>Room Number</label>
-                    <input type="text" className="form-input" value={roomForm.roomNumber} onChange={e => setRoomForm({...roomForm, roomNumber: e.target.value})} required />
+                    <label htmlFor="room-number">Room Number</label>
+                    <input id="room-number" title="Room Number" placeholder="e.g. 101" type="text" className="form-input" value={roomForm.roomNumber} onChange={e => setRoomForm({...roomForm, roomNumber: e.target.value})} required />
                   </div>
                   <div className="form-group">
-                    <label>Price (₹)</label>
-                    <input type="number" className="form-input" value={roomForm.price} onChange={e => setRoomForm({...roomForm, price: Number(e.target.value)})} required />
+                    <label htmlFor="room-price">Price (₹)</label>
+                    <input id="room-price" title="Room Price" placeholder="e.g. 5000" type="number" className="form-input" value={roomForm.price} onChange={e => setRoomForm({...roomForm, price: Number(e.target.value)})} required />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="form-group">
-                    <label>Room Type</label>
-                    <select className="form-select" value={roomForm.type} onChange={e => setRoomForm({...roomForm, type: e.target.value})}>
+                    <label htmlFor="room-type">Room Type</label>
+                    <select id="room-type" title="Room Type" className="form-select" value={roomForm.type} onChange={e => setRoomForm({...roomForm, type: e.target.value})}>
                       <option value="1-Seater">1-Seater</option>
                       <option value="2-Seater">2-Seater</option>
                       <option value="3-Seater">3-Seater</option>
@@ -494,19 +484,19 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label>Floor</label>
-                    <input type="number" className="form-input" value={roomForm.floor} onChange={e => setRoomForm({...roomForm, floor: Number(e.target.value)})} required />
+                    <label htmlFor="room-floor">Floor</label>
+                    <input id="room-floor" title="Room Floor" placeholder="e.g. 1" type="number" className="form-input" value={roomForm.floor} onChange={e => setRoomForm({...roomForm, floor: Number(e.target.value)})} required />
                   </div>
                 </div>
                 <div className="form-group">
-                  <label>Max Capacity</label>
-                  <input type="number" className="form-input" value={roomForm.capacity} onChange={e => setRoomForm({...roomForm, capacity: Number(e.target.value)})} required />
+                  <label htmlFor="room-capacity">Max Capacity</label>
+                  <input id="room-capacity" title="Max Capacity" placeholder="e.g. 2" type="number" className="form-input" value={roomForm.capacity} onChange={e => setRoomForm({...roomForm, capacity: Number(e.target.value)})} required />
                 </div>
                 <div className="form-group">
-                  <label>Description (Optional)</label>
-                  <textarea className="form-textarea" value={roomForm.description} onChange={e => setRoomForm({...roomForm, description: e.target.value})} rows={3}></textarea>
+                  <label htmlFor="room-desc">Description (Optional)</label>
+                  <textarea id="room-desc" title="Room Description" placeholder="Description..." className="form-textarea" value={roomForm.description} onChange={e => setRoomForm({...roomForm, description: e.target.value})} rows={3}></textarea>
                 </div>
-                <button type="submit" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+                <button type="submit" className="btn btn-primary mt-4">
                   {editingRoom ? 'Update Room' : 'Add Room'}
                 </button>
               </form>

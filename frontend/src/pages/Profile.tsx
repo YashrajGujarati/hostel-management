@@ -80,69 +80,63 @@ const Profile = () => {
   };
 
   return (
-    <div className="profile-page" style={{ paddingTop: '8rem', minHeight: '100vh', background: 'var(--gradient-hero)' }}>
-      <div className="section" style={{ maxWidth: '900px' }}>
+    <div className="profile-page pt-32 min-h-screen hero-bg">
+      <div className="section max-w-900">
         <motion.div 
-          className="glass-card" 
+          className="glass-card p-0 overflow-hidden" 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ padding: '0', overflow: 'hidden' }}
         >
-          <div style={{ background: 'var(--gradient-accent)', height: '150px', position: 'relative' }}>
+          <div className="profile-banner">
              <div 
-               style={{ 
-                 position: 'absolute', bottom: '-50px', left: '40px',
-                 width: '120px', height: '120px', borderRadius: '50%',
-                 border: '5px solid var(--bg-primary)', background: 'var(--gradient-primary)',
-                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                 fontSize: '3rem', fontWeight: 800, color: 'white', overflow: 'hidden',
-                 cursor: 'pointer', transition: '0.3s'
-               }}
+               className="profile-avatar"
                onClick={() => fileInputRef.current?.click()}
              >
                {user.profilePhoto ? (
-                 <img src={user.profilePhoto} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                 <img src={user.profilePhoto} alt="User Profile" title="User Profile" className="w-full h-full object-cover" />
                ) : (
                  user.name.charAt(0).toUpperCase()
                )}
-               <div className="avatar-overlay" style={{ opacity: uploading ? 1 : 0 }}>
+               <div className={`avatar-overlay ${uploading ? 'opacity-100' : 'opacity-0'}`}>
                  {uploading ? <div className="spinner"></div> : '📷'}
                </div>
              </div>
-             <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept="image/*" onChange={handleFileChange} />
+             <label htmlFor="profile-photo-upload" className="hidden-file-input">Upload Profile Photo</label>
+             <input id="profile-photo-upload" title="Upload Profile Photo" type="file" ref={fileInputRef} className="hidden-file-input" accept="image/*" onChange={handleFileChange} />
           </div>
 
-          <div style={{ padding: '70px 40px 40px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="profile-content">
+            <div className="flex-between flex-wrap gap-4">
               <div>
-                <h1 style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>{user.name}</h1>
-                <p style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                  <span style={{ fontSize: '0.8rem', background: 'var(--bg-glass)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-glass)' }}>
-                    Role: <strong style={{ color: 'var(--accent-purple)' }}>{user.role.toUpperCase()}</strong>
+                <h1 className="text-2xl mb-1">{user.name}</h1>
+                <p className="text-secondary">{user.email}</p>
+                <div className="flex gap-4 mt-4">
+                  <span className="badge-glass">
+                    Role: <strong className="text-purple">{user.role.toUpperCase()}</strong>
                   </span>
-                  <span style={{ fontSize: '0.8rem', background: 'var(--bg-glass)', padding: '4px 12px', borderRadius: '20px', border: '1px solid var(--border-glass)' }}>
+                  <span className="badge-glass">
                     ID: <strong>#{user._id?.toString().slice(-6)}</strong>
                   </span>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <div className="flex gap-3">
                 <button className={`btn ${theme === 'light' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => toggleTheme('light')}>☀️ Light</button>
                 <button className={`btn ${theme === 'dark' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => toggleTheme('dark')}>🌙 Dark</button>
               </div>
             </div>
 
-            <div className="tabs" style={{ marginTop: '3rem', borderBottom: '1px solid var(--border-glass)', justifyContent: 'flex-start' }}>
+            <div className="tabs mt-12 border-b-glass flex-start">
               <button className={`tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>Personal Info</button>
               <button className={`tab ${activeTab === 'security' ? 'active' : ''}`} onClick={() => setActiveTab('security')}>Security</button>
             </div>
 
-            <div style={{ marginTop: '2.5rem' }}>
+            <div className="mt-10">
               {activeTab === 'settings' && (
-                <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleUpdateProfile} style={{ display: 'grid', gap: '1.5rem', maxWidth: '500px' }}>
+                <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleUpdateProfile} className="grid-gap-6 max-w-500">
                   <div className="form-group">
-                    <label>Full Name</label>
+                    <label htmlFor="profile-name">Full Name</label>
                     <input 
+                      id="profile-name" title="Full Name" placeholder="Your Name"
                       type="text" 
                       className="form-input" 
                       value={profileData.name} 
@@ -150,23 +144,25 @@ const Profile = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Phone Number</label>
+                    <label htmlFor="profile-phone">Phone Number</label>
                     <input 
+                      id="profile-phone" title="Phone Number" placeholder="Your Phone Number"
                       type="text" 
                       className="form-input" 
                       value={profileData.phone}
                       onChange={e => setProfileData({...profileData, phone: e.target.value})}
                     />
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: 'fit-content' }}>Save Changes</button>
+                  <button type="submit" className="btn btn-primary w-fit">Save Changes</button>
                 </motion.form>
               )}
 
               {activeTab === 'security' && (
-                <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleChangePassword} style={{ display: 'grid', gap: '1.5rem', maxWidth: '500px' }}>
+                <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleChangePassword} className="grid-gap-6 max-w-500">
                   <div className="form-group">
-                    <label>New Password</label>
+                    <label htmlFor="new-password">New Password</label>
                     <input 
+                      id="new-password" title="New Password"
                       type="password" 
                       className="form-input" 
                       placeholder="Enter new password"
@@ -176,8 +172,9 @@ const Profile = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Confirm New Password</label>
+                    <label htmlFor="confirm-password">Confirm New Password</label>
                     <input 
+                      id="confirm-password" title="Confirm New Password"
                       type="password" 
                       className="form-input" 
                       placeholder="Repeat new password"
@@ -186,7 +183,7 @@ const Profile = () => {
                       required
                     />
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ width: 'fit-content' }}>Update Password</button>
+                  <button type="submit" className="btn btn-primary w-fit">Update Password</button>
                 </motion.form>
               )}
             </div>

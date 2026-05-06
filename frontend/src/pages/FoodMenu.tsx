@@ -18,10 +18,10 @@ const FoodMenu = () => {
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
-  if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
+  if (loading) return <div className="loading min-h-screen pt-20"><div className="spinner"></div></div>;
 
   return (
-    <div className="section" style={{ paddingTop: '6rem', minHeight: '100vh' }}>
+    <div className="section pt-24 min-h-screen">
       <motion.div className="section-header" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="section-badge">🍽️ Mess Menu</div>
         <h2 className="section-title">Weekly Food Schedule</h2>
