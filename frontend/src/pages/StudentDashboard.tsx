@@ -36,14 +36,14 @@ const StudentDashboard = () => {
       setLoading(false);
     };
     fetchData();
-  }, [user]);
+  }, [user, navigate]);
 
   if (loading) return <div className="loading" style={{ minHeight: '100vh', paddingTop: '5rem' }}><div className="spinner"></div></div>;
   if (!user) return null;
 
   const pendingComplaints = (complaints || []).filter(c => c.status !== 'Resolved').length;
-  const totalPaid = (bills || []).filter(b => b.paymentStatus === 'Paid').reduce((s, b) => s + (b.totalAmount || 0), 0);
-  const pendingBills = (bills || []).filter(b => b.paymentStatus === 'Pending');
+  const totalPaid = (bills || []).filter(b => b.status === 'Paid').reduce((s: number, b: any) => s + (b.amount || 0), 0);
+  const pendingBills = (bills || []).filter(b => b.status === 'Unpaid');
 
   return (
     <div className="dashboard">
@@ -141,10 +141,10 @@ const StudentDashboard = () => {
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{b.durationLabel}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    ₹{(b.totalAmount || 0).toLocaleString()} • {b.generatedAt ? new Date(b.generatedAt).toLocaleDateString() : 'N/A'}
+                    ₹{(b.amount || 0).toLocaleString()} • {b.createdAt ? new Date(b.createdAt).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
-                {b.paymentStatus === 'Paid' && (
+                {b.status === 'Paid' && (
                   <button 
                     className="btn btn-outline btn-sm"
                     style={{ fontSize: '0.7rem' }}
@@ -185,12 +185,12 @@ const StudentDashboard = () => {
                   <span className={`complaint-category ${c.category}`}>{c.category}</span>
                   <span className={`complaint-status ${c.status.replace(' ', '-')}`}>{c.status}</span>
                 </div>
-                <div className="complaint-subject">{c.subject}</div>
+                <div className="complaint-subject">{c.title || c.subject}</div>
                 <div className="complaint-description">{c.description}</div>
-                {c.adminResponse && (
+                {(c.comment || c.adminResponse) && (
                   <div className="complaint-response">
                     <div className="complaint-response-label">Admin Response</div>
-                    <p>{c.adminResponse}</p>
+                    <p>{c.comment || c.adminResponse}</p>
                   </div>
                 )}
                 <div className="complaint-meta">{new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>

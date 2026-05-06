@@ -31,8 +31,8 @@ const AdminDashboard = () => {
 
   const maskEmail = (email: string) => {
     if (!email) return '';
-    const [user, domain] = email.split('@');
-    return `${user.charAt(0)}${'*'.repeat(user.length - 2)}${user.slice(-1)}@${domain}`;
+    const [localPart, domain] = email.split('@');
+    return `${localPart.charAt(0)}${'*'.repeat(localPart.length - 2)}${localPart.slice(-1)}@${domain}`;
   };
 
   const maskPhone = (phone: string) => {
@@ -92,7 +92,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!user || user.role !== 'admin') { navigate('/dashboard'); return; }
     fetchData();
-  }, [user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, navigate]);
 
   const fetchData = async () => {
     try {
@@ -127,7 +128,7 @@ const AdminDashboard = () => {
 
   const pendingComplaints = (complaints || []).filter(c => c.status === 'Pending' || c.status === 'Open').length;
   const availableRooms = (rooms || []).filter(r => r.isAvailable).length;
-  const totalRevenue = (bills || []).filter(b => b.paymentStatus === 'Paid').reduce((s, b) => s + (b.totalAmount || b.amount || 0), 0);
+  const totalRevenue = (bills || []).filter(b => b.status === 'Paid').reduce((s: number, b: any) => s + (b.amount || 0), 0);
 
   return (
     <div className="dashboard">
@@ -293,7 +294,7 @@ const AdminDashboard = () => {
             <div key={b._id} className="complaint-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div className="complaint-header">
-                  <span className={`complaint-status ${b.paymentStatus === 'Paid' ? 'Resolved' : 'Pending'}`}>{b.paymentStatus || 'Pending'}</span>
+                  <span className={`complaint-status ${b.status === 'Paid' ? 'Resolved' : 'Pending'}`}>{b.status || 'Unpaid'}</span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                     {new Date(b.createdAt).toLocaleDateString('en-IN')}
                   </span>
@@ -303,7 +304,7 @@ const AdminDashboard = () => {
                   {b.studentId?.name || 'Unknown student'} • Room {b.studentId?.roomId?.roomNumber || 'N/A'}
                 </div>
               </div>
-              {b.paymentStatus === 'Paid' && (
+              {b.status === 'Paid' && (
                 <button 
                   className="btn btn-outline btn-sm"
                   onClick={() => {

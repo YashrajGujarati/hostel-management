@@ -25,7 +25,7 @@ const Complaints = () => {
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     fetchComplaints();
-  }, [user]);
+  }, [user, navigate]);
 
   const fetchComplaints = async () => {
     try {
@@ -125,12 +125,12 @@ const Complaints = () => {
               </div>
               <span className={`complaint-status ${c.status.replace(' ', '-')}`}>{c.status}</span>
             </div>
-            <div className="complaint-subject">{c.subject}</div>
+            <div className="complaint-subject">{c.title || c.subject}</div>
             <div className="complaint-description">{c.description}</div>
-            {c.adminResponse && (
+            {(c.comment || c.adminResponse) && (
               <div className="complaint-response">
                 <div className="complaint-response-label">🏨 Owner's Response</div>
-                <p>{c.adminResponse}</p>
+                <p>{c.comment || c.adminResponse}</p>
               </div>
             )}
             <div className="complaint-meta">

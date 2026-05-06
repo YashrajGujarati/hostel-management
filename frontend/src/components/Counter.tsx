@@ -1,5 +1,5 @@
-import { useRef, useEffect } from 'react';
-import { motion, useInView, useMotionValue, useSpring, useTransform, animate } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import { useInView, useMotionValue, useSpring } from 'framer-motion';
 
 interface CounterProps {
   value: number;
@@ -10,26 +10,29 @@ interface CounterProps {
 
 const Counter = ({ value, duration = 1.2, prefix = '', suffix = '' }: CounterProps) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true });
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  
   const motionValue = useMotionValue(0);
   const springValue = useSpring(motionValue, {
-    damping: 30,
-    stiffness: 100,
+    damping: 40,
+    stiffness: 80,
   });
-  const displayValue = useTransform(springValue, (latest) => 
-    `${prefix}${Math.floor(latest).toLocaleString()}${suffix}`
-  );
 
   useEffect(() => {
-    if (isInView) {
-      animate(motionValue, value, {
-        duration: duration,
-        ease: "easeOut",
-      });
+    if (isInView && value > 0) {
+      motionValue.set(value);
     }
-  }, [isInView, value, duration, motionValue]);
+  }, [isInView, value, motionValue]);
 
-  return <motion.span ref={ref}>{displayValue}</motion.span>;
+  useEffect(() => {
+    return springValue.on('change', (latest) => {
+      if (ref.current) {
+        ref.current.textContent = `${prefix}${Math.floor(latest).toLocaleString()}${suffix}`;
+      }
+    });
+  }, [springValue, prefix, suffix]);
+
+  return <span ref={ref}>{prefix}0{suffix}</span>;
 };
 
 export default Counter;

@@ -54,7 +54,7 @@ const FeePayment = () => {
       setLoading(false);
     };
     fetchData();
-  }, [user]);
+  }, [user, navigate]);
 
   const generateBill = async (durationOverride?: number) => {
     const durationToUse = durationOverride || selectedDuration;
@@ -81,7 +81,14 @@ const FeePayment = () => {
     setError('');
     try {
       const { data } = await axios.post(`${API}/bills/${bill._id}/pay`, { paymentMethod: selectedPayment });
-      setReceipt(data);
+      const enrichedReceipt = {
+        ...data,
+        studentName: data.studentName || user?.name || 'Student',
+        roomNumber: data.roomNumber || room?.roomNumber || 'N/A',
+        roomType: data.roomType || room?.type || 'Standard',
+        totalAmount: data.amount || data.totalAmount || bill.totalAmount || 0
+      };
+      setReceipt(enrichedReceipt);
       setBill(null);
       const bRes = await axios.get(`${API}/bills`);
       setBills(bRes.data);
@@ -415,6 +422,15 @@ const FeePayment = () => {
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                 <button className="btn btn-secondary" onClick={() => setBill(null)}>← Back</button>
+                {(selectedPayment === 'google_pay' || selectedPayment === 'paytm') && (
+                  <button
+                    className="btn btn-outline btn-sm"
+                    style={{ fontWeight: 700 }}
+                    onClick={() => setShowQR(true)}
+                  >
+                    📱 Scan QR Code
+                  </button>
+                )}
                 <button
                   className="btn btn-emerald btn-lg"
                   style={{ flex: 1, fontWeight: 800, letterSpacing: '0.02em', boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)' }}

@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import { connectDB } from './config/db';
 import authRoutes from './routes/auth';
@@ -21,6 +22,20 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
+
+// Database Health Check Middleware
+app.use((req, res, next) => {
+  // Skip health check for the health route itself
+  if (req.path === '/api/health') return next();
+  
+  if (mongoose.connection.readyState !== 1) {
+    res.status(503).json({ 
+      message: 'Database is currently offline. This is usually because your IP address is not whitelisted in MongoDB Atlas. Go to Network Access -> Add 0.0.0.0/0.' 
+    });
+    return;
+  }
+  next();
+});
 
 // Request Logger
 app.use((req, res, next) => {
@@ -47,9 +62,12 @@ app.use('/api/bills', billRoutes);
 // Student Book Request
 app.post('/api/students/book-request', protect, async (req: any, res) => {
   try {
-    const { roomType, roomId } = req.body;
+    const { roomId } = req.body;
     const student = await Student.findById(req.user.id);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (!student) {
+      res.status(404).json({ message: 'Student not found' });
+      return;
+    }
     
     student.bookingStatus = 'Pending';
     student.roomId = roomId; // temporary or preferred room
@@ -66,7 +84,10 @@ app.post('/api/students/book-request', protect, async (req: any, res) => {
 // Get all students
 app.get('/api/students', protect, async (req: any, res) => {
   try {
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
+    if (req.user.role !== 'admin') {
+      res.status(403).json({ message: 'Forbidden' });
+      return;
+    }
     const students = await Student.find({ role: 'student' }).populate('roomId');
     res.json(students);
   } catch (error: any) {
@@ -77,10 +98,16 @@ app.get('/api/students', protect, async (req: any, res) => {
 // Manage Booking Status
 app.patch('/api/students/:id/booking', protect, async (req: any, res) => {
   try {
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
+    if (req.user.role !== 'admin') {
+      res.status(403).json({ message: 'Forbidden' });
+      return;
+    }
     const { status } = req.body;
     const student = await Student.findById(req.params.id);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (!student) {
+      res.status(404).json({ message: 'Student not found' });
+      return;
+    }
     
     student.bookingStatus = status;
     await student.save();
@@ -102,7 +129,10 @@ app.patch('/api/students/:id/booking', protect, async (req: any, res) => {
 // Internal Notify Route
 app.post('/api/students/:id/notify', protect, async (req: any, res) => {
   try {
-    if (req.user.role !== 'admin') return res.status(403).json({ message: 'Forbidden' });
+    if (req.user.role !== 'admin') {
+      res.status(403).json({ message: 'Forbidden' });
+      return;
+    }
     const { title, message, type } = req.body;
     
     const notif = await Notification.create({

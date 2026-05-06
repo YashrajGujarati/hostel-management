@@ -20,32 +20,38 @@ export const seedData = async (isStartup = false) => {
       console.log('🌱 Checking if database needs seeding...');
     }
 
-    // Check if admin already exists
-    const adminExists = await Student.findOne({ role: 'admin' });
-    if (adminExists && isStartup) {
-      console.log('✅ Database already has data. Skipping seed.');
+    // Check if rooms already exist (better indicator of a fully seeded DB)
+    const roomCount = await Room.countDocuments();
+    if (roomCount > 0 && isStartup) {
+      console.log('✅ Database already has rooms data. Skipping seed.');
       return;
     }
 
-    // Create admin
-    await Student.create({
-      name: 'Hostel Admin',
-      email: 'admin@hostelsphere.com',
-      password: 'admin123',
-      phone: '9999999999',
-      role: 'admin'
-    });
-    console.log('👤 Admin created: admin@hostelsphere.com / admin123');
+    // Create admin if not exists
+    const adminExists = await Student.findOne({ email: 'admin@hostelsphere.com' });
+    if (!adminExists) {
+      await Student.create({
+        name: 'Hostel Admin',
+        email: 'admin@hostelsphere.com',
+        password: 'admin123',
+        phone: '9999999999',
+        role: 'admin'
+      });
+      console.log('👤 Admin created: admin@hostelsphere.com / admin123');
+    }
 
-    // Create demo student
-    await Student.create({
-      name: 'Banna Student',
-      email: 'banna@hostel.com',
-      password: 'banna123',
-      phone: '9876543210',
-      role: 'student'
-    });
-    console.log('👤 Demo student created: banna@hostel.com / banna123');
+    // Create demo student if not exists
+    const studentExists = await Student.findOne({ email: 'banna@hostel.com' });
+    if (!studentExists) {
+      await Student.create({
+        name: 'Banna Student',
+        email: 'banna@hostel.com',
+        password: 'banna123',
+        phone: '9876543210',
+        role: 'student'
+      });
+      console.log('👤 Demo student created: banna@hostel.com / banna123');
+    }
 
     // Create rooms
     const roomsData = [

@@ -1,6 +1,5 @@
 import { Router, Response } from 'express';
 import Student from '../models/Student';
-import Room from '../models/Room';
 import { AuthRequest, generateToken, protect } from '../middleware/auth';
 
 const router = Router();

@@ -24,7 +24,11 @@ const Signup = () => {
       toast.success('Account Created Successfully!');
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Signup failed');
+      if (!err.response) {
+        setError('Network Error: Cannot connect to the server. Please check if the backend is running.');
+      } else {
+        setError(err.response?.data?.message || 'Signup failed. Please try again.');
+      }
     }
     setLoading(false);
   };
