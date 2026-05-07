@@ -164,7 +164,6 @@ const AdminDashboard = () => {
 
       {/* ANALYTICS SECTION */}
       <motion.div 
-        className="glass-card" 
         className="glass-card mt-6 p-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -3,12 +3,11 @@ import { useInView, useMotionValue, useSpring } from 'framer-motion';
 
 interface CounterProps {
   value: number;
-  duration?: number;
   prefix?: string;
   suffix?: string;
 }
 
-const Counter = ({ value, duration = 1.2, prefix = '', suffix = '' }: CounterProps) => {
+const Counter = ({ value, prefix = '', suffix = '' }: CounterProps) => {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   
