@@ -1,4 +1,5 @@
 {
+  "_comment": "Hostel Management Vercel Config",
   "version": 2,
   "installCommand": "npm install --prefix frontend --include=dev && npm install --prefix backend",
   "buildCommand": "cd frontend && npx vite build",
