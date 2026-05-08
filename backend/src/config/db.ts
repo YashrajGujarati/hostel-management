@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,6 +13,10 @@ export const connectDB = async (): Promise<void> => {
     process.exit(1);
   }
 
+  // Force Google DNS to fix querySrv ECONNREFUSED on restricted networks
+  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+  console.log('🌐 DNS set to Google (8.8.8.8) & Cloudflare (1.1.1.1)');
+
   // Mask credentials for safe logging
   const maskedURI = MONGO_URI.replace(/:([^@]+)@/, ':****@');
   console.log(`📡 Connecting to MongoDB Atlas...`);
@@ -21,7 +26,7 @@ export const connectDB = async (): Promise<void> => {
     mongoose.set('strictQuery', false);
 
     const conn = await mongoose.connect(MONGO_URI, {
-      serverSelectionTimeoutMS: 5000, // 5 second timeout
+      serverSelectionTimeoutMS: 30000, // 30 second timeout
       socketTimeoutMS: 45000,
     });
 
