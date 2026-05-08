@@ -1,8 +1,7 @@
 {
-  "_comment": "Hostel Management Vercel Config",
   "version": 2,
-  "installCommand": "npm install --prefix frontend --include=dev && npm install --prefix backend",
-  "buildCommand": "cd frontend && npx vite build",
+  "installCommand": "cd frontend && npm install --include=dev && cd ../backend && npm install",
+  "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/**/*.ts": {
