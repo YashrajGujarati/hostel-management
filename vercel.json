@@ -1,33 +1,16 @@
 {
   "version": 2,
-  "installCommand": "cd frontend && npm install --include=dev && cd ../backend && npm install && cd ..",
-  "buildCommand": "cd frontend && npm run build && cd ..",
+  "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
-  "env": {
-    "NODE_ENV": "production"
-  },
   "functions": {
     "api/index.ts": {
-      "runtime": "nodejs20.x",
-      "memory": 1024,
-      "maxDuration": 30,
-      "environment": {
-        "NODE_ENV": "production"
-      }
+      "runtime": "nodejs20.x"
     }
   },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.ts",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE",
-        "OPTIONS"
-      ]
+      "dest": "/api/index.ts"
     },
     {
       "src": "/(.*)",
