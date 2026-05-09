@@ -6,6 +6,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/api"
+    },
+    {
+      "source": "/((?!api/|_next/static/|_next/image|favicon.ico).*)",
+      "destination": "/index.html"
     }
   ]
 }
