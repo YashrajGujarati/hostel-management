@@ -12,21 +12,16 @@ When deploying to Vercel, navigate to **Settings > Environment Variables** and a
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DB_HOST` | Database host address | `db.example.com` |
-| `DB_NAME` | Name of the database | `hostel_db` |
-| `DB_USER` | Database username | `admin` |
-| `DB_PASS` | Database password | `********` |
-| `DB_PORT` | Database port (default 3306) | `3306` |
-| `DB_SSL` | Enable SSL for DB (true/false) | `true` |
+| `MONGO_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/hostel_db?retryWrites=true&w=majority` |
 | `JWT_SECRET` | Secret key for JWT tokens | `your_secret_key` |
 | `NODE_ENV` | Environment name | `production` |
-| `SYNC_DB` | Set to 'true' once to sync schema | `false` |
+| `SYNC_DB` | Set to `true` once to seed data on startup | `false` |
 
 ### Local Development
 
 1. Install dependencies: `npm run install:all`
-2. Configure frontend `.env` in `frontend/` (if using VITE_API_URL).
-3. Configure backend `.env` in `backend/`.
+2. Configure frontend `.env` in `frontend/` (if using `VITE_API_URL`).
+3. Configure backend `.env` in `backend/` with at least `MONGO_URI` and `JWT_SECRET`.
 4. Run locally: `npm run dev` (run from root if orchestrated, or individually in `frontend` and `backend`).
 
 ### Build Command

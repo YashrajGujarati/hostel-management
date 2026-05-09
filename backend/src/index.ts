@@ -25,10 +25,11 @@ app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 // Database Health Check Middleware
 app.use((req, res, next) => {
-  // Skip health check for the health route itself
-  if (req.path === '/api/health') return next();
+  // Skip health check for the health route itself or in production
+  if (req.path === '/api/health' || process.env.NODE_ENV === 'production') return next();
   
-  if (mongoose.connection.readyState !== 1) {
+  // Allow connected (1) or connecting (2) states
+  if (mongoose.connection.readyState !== 1 && mongoose.connection.readyState !== 2) {
     res.status(503).json({ 
       message: 'Database is currently offline. This is usually because your IP address is not whitelisted in MongoDB Atlas. Go to Network Access -> Add 0.0.0.0/0.' 
     });
