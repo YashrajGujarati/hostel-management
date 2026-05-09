@@ -34,8 +34,5 @@
       "dest": "/index.html",
       "status": 200
     }
-  ],
-  "analytics": {
-    "enabled": false
-  }
+  ]
 }
